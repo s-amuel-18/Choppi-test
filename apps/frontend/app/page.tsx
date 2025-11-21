@@ -1,4 +1,5 @@
 import Navbar from '@/src/components/Navbar';
+import Link from 'next/link';
 
 export default function Home() {
   const navLinks = [
@@ -19,7 +20,14 @@ export default function Home() {
               eficiente y sencilla. Únete a nuestra comunidad y comienza a
               disfrutar de todas las ventajas.
             </p>
-            <button className="btn btn-primary btn-lg">Registrarse</button>
+            <div className="flex flex-col gap-4">
+              <Link href="/login" className="btn btn-primary btn-lg">
+                Iniciar Sesión
+              </Link>
+              <Link href="/register" className="btn btn-outline btn-lg">
+                Registrarse
+              </Link>
+            </div>
           </div>
         </div>
       </div>
