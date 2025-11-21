@@ -3,9 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from '../config/env.config';
 import { DataSourceOptions } from 'typeorm';
 
-/**
- * Configuración de TypeORM para PostgreSQL
- */
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
   host: databaseConfig.host,
@@ -27,9 +24,6 @@ const typeOrmConfig: DataSourceOptions = {
   },
 };
 
-/**
- * Módulo de base de datos que configura TypeORM con PostgreSQL
- */
 @Module({
   imports: [
     TypeOrmModule.forRoot({

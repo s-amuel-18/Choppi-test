@@ -1,11 +1,6 @@
 import { cleanEnv, str, num, bool, host, port } from 'envalid';
 
-/**
- * Configuración y validación de variables de entorno usando envalid
- * Este archivo valida todas las variables de entorno requeridas y opcionales
- */
 export const env = cleanEnv(process.env, {
-  // Variables de aplicación
   NODE_ENV: str({
     choices: ['development', 'production', 'test'],
     default: 'development',
@@ -16,7 +11,6 @@ export const env = cleanEnv(process.env, {
     desc: 'Puerto en el que se ejecutará el servidor',
   }),
 
-  // Variables de PostgreSQL (Base de datos)
   DB_HOST: host({
     default: 'localhost',
     desc: 'Host de la base de datos PostgreSQL',
@@ -52,9 +46,6 @@ export const env = cleanEnv(process.env, {
   }),
 });
 
-/**
- * Interface para tipar la configuración de la base de datos
- */
 export interface DatabaseConfig {
   host: string;
   port: number;
@@ -67,9 +58,6 @@ export interface DatabaseConfig {
   maxConnections: number;
 }
 
-/**
- * Configuración de la base de datos extraída de las variables de entorno
- */
 export const databaseConfig: DatabaseConfig = {
   host: env.DB_HOST,
   port: env.DB_PORT,
@@ -82,7 +70,4 @@ export const databaseConfig: DatabaseConfig = {
   maxConnections: env.DB_MAX_CONNECTIONS,
 };
 
-/**
- * URL de conexión a la base de datos PostgreSQL
- */
 export const databaseUrl = `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`;
