@@ -1,48 +1,28 @@
+import { InputField, FormButton, FormCard } from '@/src/components/forms';
+
 export default function LoginPage() {
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-base-200">
-      <div className="card w-full max-w-md shadow-2xl bg-base-100">
-        <div className="card-body">
-          <h2 className="text-center text-3xl font-bold mb-6">
-            Iniciar Sesión
-          </h2>
-          <form>
-            <div className="form-control mb-4">
-              <label className="label mb-2" htmlFor="email">
-                <span className="label-text">Correo Electrónico</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="correo@ejemplo.com"
-                className="input input-bordered w-full"
-                required
-              />
-            </div>
+    <FormCard title="Iniciar Sesión">
+      <form>
+        <InputField
+          type="email"
+          name="email"
+          label="Correo Electrónico"
+          placeholder="correo@ejemplo.com"
+          required
+        />
 
-            <div className="form-control mb-6">
-              <label className="label mb-2" htmlFor="password">
-                <span className="label-text">Contraseña</span>
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="********"
-                className="input input-bordered w-full"
-                required
-              />
-            </div>
+        <InputField
+          type="password"
+          name="password"
+          label="Contraseña"
+          placeholder="********"
+          containerClassName="mb-6"
+          required
+        />
 
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary w-full">
-                Ingresar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+        <FormButton>Ingresar</FormButton>
+      </form>
+    </FormCard>
   );
 }
