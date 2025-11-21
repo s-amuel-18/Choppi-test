@@ -1,0 +1,28 @@
+{
+    "name": "choppi-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Monorepo para Choppi - Backend (NestJS) y Frontend (Next.js)",
+    "workspaces": [
+        "apps/*"
+    ],
+    "scripts": {
+        "dev": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+        "dev:backend": "npm run start:dev --workspace=apps/backend",
+        "dev:frontend": "npm run dev --workspace=apps/frontend",
+        "build": "npm run build --workspaces",
+        "build:backend": "npm run build --workspace=apps/backend",
+        "build:frontend": "npm run build --workspace=apps/frontend",
+        "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+        "start:backend": "npm run start:prod --workspace=apps/backend",
+        "start:frontend": "npm run start --workspace=apps/frontend",
+        "install:all": "npm install && npm install --workspace=apps/backend && npm install --workspace=apps/frontend"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    },
+    "engines": {
+        "npm": ">=10.0.0",
+        "node": ">=20.0.0"
+    }
+}
