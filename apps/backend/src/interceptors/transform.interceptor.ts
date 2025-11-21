@@ -21,25 +21,17 @@ export class TransformInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const { method, url } = request;
 
-    console.log(`🔄 Interceptor ejecutándose para ${method} ${url}`);
-
     const call$ = next.handle();
 
     return (call$ as any).pipe(
       map((data: any) => {
-        console.log('📦 Datos recibidos en interceptor:', JSON.stringify(data));
-
         // Si la respuesta ya tiene el formato ApiResponse, la devolvemos tal cual
         if (this.isApiResponse(data)) {
-          console.log('✅ Respuesta ya tiene formato ApiResponse');
           return data;
         }
 
         // Si la respuesta es null o undefined, devolvemos un formato estándar
         if (data === null || data === undefined) {
-          console.log(
-            '⚠️ Respuesta es null/undefined, devolviendo formato estándar',
-          );
           return {
             success: true,
             message: 'Operación exitosa',
@@ -52,7 +44,6 @@ export class TransformInterceptor implements NestInterceptor {
           data,
         };
 
-        console.log('✨ Respuesta transformada:', JSON.stringify(transformed));
         return transformed;
       }),
     );
