@@ -44,6 +44,15 @@ export const env = cleanEnv(process.env, {
     default: 10,
     desc: 'Número máximo de conexiones al pool de la base de datos',
   }),
+
+  JWT_SECRET: str({
+    default: 'your-secret-key-change-in-production',
+    desc: 'Clave secreta para firmar los tokens JWT',
+  }),
+  JWT_EXPIRES_IN: num({
+    default: 24 * 60 * 60,
+    desc: 'Tiempo de expiración del token JWT',
+  }),
 });
 
 export interface DatabaseConfig {
