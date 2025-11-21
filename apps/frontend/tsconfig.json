@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@choppi/types": ["../../packages/types/src"]
     }
   },
   "include": [
