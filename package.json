@@ -18,7 +18,14 @@
         "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
         "start:backend": "npm run start:prod --workspace=apps/backend",
         "start:frontend": "npm run start --workspace=apps/frontend",
-        "install:all": "npm install && npm install --workspace=apps/backend && npm install --workspace=apps/frontend"
+        "install:all": "npm install && npm install --workspace=apps/backend && npm install --workspace=apps/frontend",
+        "docker:up": "docker-compose up -d",
+        "docker:down": "docker-compose down",
+        "docker:logs": "docker-compose logs -f postgres",
+        "docker:restart": "docker-compose restart postgres",
+        "docker:stop": "docker-compose stop postgres",
+        "docker:start": "docker-compose start postgres",
+        "docker:clean": "docker-compose down -v"
     },
     "devDependencies": {
         "concurrently": "^9.2.1"
