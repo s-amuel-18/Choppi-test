@@ -3,7 +3,7 @@
  * @package @choppi/types
  */
 
-// Ejemplo: Tipos de usuario
+// Tipos de usuario
 export interface User {
   id: string;
   email: string;
@@ -12,5 +12,5 @@ export interface User {
   updatedAt: Date;
 }
 
-// Exportar todos los tipos desde este archivo central
-// Agrega aquí tus tipos compartidos que necesiten usar tanto backend como frontend
+// Esquemas de validación
+export * from './schemas';

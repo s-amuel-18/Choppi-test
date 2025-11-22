@@ -53,6 +53,11 @@ export const env = cleanEnv(process.env, {
     default: 24 * 60 * 60,
     desc: 'Tiempo de expiración del token JWT',
   }),
+
+  CORS_ORIGIN: str({
+    default: 'http://localhost:3000',
+    desc: 'Origen permitido para CORS (URL del frontend)',
+  }),
 });
 
 export interface DatabaseConfig {

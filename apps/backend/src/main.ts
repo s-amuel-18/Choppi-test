@@ -8,6 +8,17 @@ import { TransformInterceptor } from './interceptors/transform.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Configuración CORS
+  const corsOptions = {
+    origin: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Authorization'],
+  };
+
+  app.enableCors(corsOptions);
+
   const config = new DocumentBuilder()
     .setTitle('Choppi API')
     .setDescription('API REST para la aplicación Choppi')
@@ -39,5 +50,6 @@ async function bootstrap() {
   console.log(`📦 Environment: ${env.NODE_ENV}`);
   console.log(`🗄️  Database: ${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`);
   console.log(`📚 Swagger documentation: http://localhost:${env.PORT}/api`);
+  console.log(`🌐 CORS enabled for: ${env.CORS_ORIGIN}`);
 }
 bootstrap();

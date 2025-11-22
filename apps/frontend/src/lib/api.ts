@@ -1,4 +1,4 @@
-import { env } from '@/config';
+import { env } from '@/src/config';
 
 /**
  * URL base de la API del backend
