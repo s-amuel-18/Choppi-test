@@ -27,7 +27,7 @@ class AuthService {
   /**
    * Inicia sesión con email y contraseña
    */
-  async login(data: LoginRequest): Promise<LoginResponse> {
+  async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await apiClient.post<LoginResponse>('/auth/login', data);
       return response.data;

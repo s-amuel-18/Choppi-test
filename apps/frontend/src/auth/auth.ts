@@ -27,7 +27,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const { email, password } = validatedFields.data;
 
           // Llamar al servicio de autenticación
-          const loginResponse = await authService.login({ email, password });
+          const { data: loginResponse } = await authService.login({
+            email,
+            password,
+          });
 
           if (!loginResponse || !loginResponse.accessToken) {
             return null;

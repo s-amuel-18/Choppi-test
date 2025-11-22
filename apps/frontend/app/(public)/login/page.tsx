@@ -18,6 +18,7 @@ export default function LoginPage() {
     register: registerField,
     handleSubmit,
     formState: { errors },
+
     setError: setFormError,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -31,19 +32,19 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const result = await signIn('login', {
+      const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       });
-      console.log({ result });
+
       if (result?.error) {
         setError(
           'Credenciales inválidas. Por favor, verifica tu email y contraseña.'
         );
       } else if (result?.ok) {
         router.push('/dashboard');
-        router.refresh();
+        // router.refresh();
       }
     } catch (err) {
       setError('Error al iniciar sesión. Por favor, intenta nuevamente.');
@@ -70,6 +71,7 @@ export default function LoginPage() {
           label="Correo Electrónico"
           placeholder="correo@ejemplo.com"
           error={errors.email?.message}
+          value={'test@test.com'}
           {...registerField('email')}
         />
 
@@ -78,6 +80,7 @@ export default function LoginPage() {
           label="Contraseña"
           placeholder="********"
           error={errors.password?.message}
+          value={'0424Sam??'}
           containerClassName="mb-6"
           {...registerField('password')}
         />
