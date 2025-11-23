@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { FormButton, ErrorAlert, StoreFormFields, StoreFormData } from '@/src/components/forms';
+import { createStoreSchema } from '@/src/schemas/store.schema';
+import { storeService } from '@/src/services/store.service';
+import { ApiError } from '@/src/types/store';
 
 export default function CreateStorePage() {
   const router = useRouter();
@@ -15,6 +19,7 @@ export default function CreateStorePage() {
     handleSubmit,
     formState: { errors },
   } = useForm<StoreFormData>({
+    resolver: zodResolver(createStoreSchema),
     mode: 'onBlur',
   });
 
@@ -23,16 +28,10 @@ export default function CreateStorePage() {
     setGeneralError('');
 
     try {
-      // TODO: Implement API call to create store
-      console.log('Creating store:', data);
-      // await storeService.create(data);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await storeService.create(data);
       router.push('/stores');
     } catch (error) {
-      const apiError = error as { message?: string; errors?: string[] };
+      const apiError = error as ApiError;
       if (apiError.errors && Array.isArray(apiError.errors)) {
         setGeneralError(apiError.errors.join(', '));
       } else {
