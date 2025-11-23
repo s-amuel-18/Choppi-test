@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { storeService } from '@/src/services/store.service';
 import { Store, ApiError } from '@/src/types/store';
+import ConfirmModal from '@/src/components/ConfirmModal';
 
 interface PaginatedStores {
   data: Store[];
@@ -29,6 +30,22 @@ export default function StoresPage() {
     totalPages: 0,
   });
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    storeId: string | null;
+    storeName: string;
+  }>({
+    isOpen: false,
+    storeId: null,
+    storeName: '',
+  });
+  const [errorModal, setErrorModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: '',
+  });
 
   const loadStores = useCallback(
     async (page: number = 1, search: string = '') => {
@@ -71,22 +88,40 @@ export default function StoresPage() {
     return () => clearTimeout(timer);
   }, [searchTerm, loadStores, currentPage]);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`¿Estás seguro de que deseas eliminar la tienda "${name}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (id: string, name: string) => {
+    setDeleteModal({
+      isOpen: true,
+      storeId: id,
+      storeName: name,
+    });
+  };
 
-    setDeletingId(id);
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.storeId) return;
+
+    setDeletingId(deleteModal.storeId);
     try {
-      await storeService.remove(id);
+      await storeService.remove(deleteModal.storeId);
+      // Cerrar el modal
+      setDeleteModal({ isOpen: false, storeId: null, storeName: '' });
       // Recargar la lista
       await loadStores(currentPage, searchTerm);
     } catch (err) {
       const apiError = err as ApiError;
-      alert(apiError.message || 'Error al eliminar la tienda');
+      // Cerrar el modal de confirmación
+      setDeleteModal({ isOpen: false, storeId: null, storeName: '' });
+      // Mostrar modal de error
+      setErrorModal({
+        isOpen: true,
+        message: apiError.message || 'Error al eliminar la tienda',
+      });
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, storeId: null, storeName: '' });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -226,7 +261,9 @@ export default function StoresPage() {
                           </Link>
                           <button
                             className="btn btn-sm btn-ghost text-error"
-                            onClick={() => handleDelete(store.id, store.name)}
+                            onClick={() =>
+                              handleDeleteClick(store.id, store.name)
+                            }
                             disabled={deletingId === store.id}
                             title="Eliminar"
                           >
@@ -326,6 +363,31 @@ export default function StoresPage() {
           )}
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Tienda"
+        message={`¿Estás seguro de que deseas eliminar la tienda "${deleteModal.storeName}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="error"
+        loading={deletingId !== null}
+      />
+
+      {/* Error Modal */}
+      <ConfirmModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal({ isOpen: false, message: '' })}
+        onConfirm={() => setErrorModal({ isOpen: false, message: '' })}
+        title="Error"
+        message={errorModal.message}
+        confirmText="Aceptar"
+        cancelText=""
+        confirmVariant="primary"
+      />
     </div>
   );
 }
