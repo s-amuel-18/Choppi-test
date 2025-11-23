@@ -3,12 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   FormButton,
   ErrorAlert,
   StoreFormFields,
-  StoreFormData,
 } from '@/src/components/forms';
+import {
+  updateStoreSchema,
+  UpdateStoreInput,
+} from '@/src/schemas/store.schema';
+import { storeService } from '@/src/services/store.service';
+import { ApiError } from '@/src/types/store';
 
 export default function EditStorePage() {
   const router = useRouter();
@@ -17,35 +23,29 @@ export default function EditStorePage() {
   const [loading, setLoading] = useState(false);
   const [loadingStore, setLoadingStore] = useState(true);
   const [generalError, setGeneralError] = useState<string>('');
+  const [notFound, setNotFound] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<StoreFormData>({
+  } = useForm<UpdateStoreInput>({
+    resolver: zodResolver(updateStoreSchema),
     mode: 'onBlur',
   });
 
   // Load store data
   useEffect(() => {
     const loadStore = async () => {
+      if (!storeId) {
+        setNotFound(true);
+        setLoadingStore(false);
+        return;
+      }
+
       try {
-        // TODO: Implement API call to get store by id
-        // const store = await storeService.getById(storeId);
-
-        // Simulate API call with sample data
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Sample store data - replace with actual API call
-        const store = {
-          id: storeId,
-          name: 'Tienda Centro',
-          description: 'Tienda principal ubicada en el centro',
-          address: 'Av. Principal 123',
-          phone: '555-0101',
-          email: 'centro@tienda.com',
-        };
+        const store = await storeService.findOne(storeId);
 
         reset({
           name: store.name,
@@ -55,32 +55,34 @@ export default function EditStorePage() {
           email: store.email,
         });
       } catch (error) {
-        setGeneralError('Error al cargar los datos de la tienda');
+        const apiError = error as ApiError;
+        if (apiError.statusCode === 404) {
+          setNotFound(true);
+          setGeneralError('Tienda no encontrada');
+        } else {
+          setGeneralError(
+            apiError.message || 'Error al cargar los datos de la tienda'
+          );
+        }
       } finally {
         setLoadingStore(false);
       }
     };
 
-    if (storeId) {
-      loadStore();
-    }
+    loadStore();
   }, [storeId, reset]);
 
-  const onSubmit = async (data: StoreFormData) => {
+  const onSubmit = async (data: UpdateStoreInput) => {
+    if (!storeId) return;
+
     setLoading(true);
     setGeneralError('');
 
     try {
-      // TODO: Implement API call to update store
-      console.log('Updating store:', storeId, data);
-      // await storeService.update(storeId, data);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await storeService.update(storeId, data);
       router.push('/stores');
     } catch (error) {
-      const apiError = error as { message?: string; errors?: string[] };
+      const apiError = error as ApiError;
       if (apiError.errors && Array.isArray(apiError.errors)) {
         setGeneralError(apiError.errors.join(', '));
       } else {
@@ -98,6 +100,29 @@ export default function EditStorePage() {
           <div className="card-body">
             <div className="flex justify-center items-center py-12">
               <span className="loading loading-spinner loading-lg"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold mb-4">Tienda no encontrada</h2>
+              <p className="text-base-content/60 mb-6">
+                La tienda que estás buscando no existe o ha sido eliminada.
+              </p>
+              <button
+                onClick={() => router.push('/stores')}
+                className="btn btn-primary"
+              >
+                Volver a Tiendas
+              </button>
             </div>
           </div>
         </div>

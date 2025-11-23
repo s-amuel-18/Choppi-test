@@ -1,12 +1,15 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { InputField, TextareaField } from './index';
-import { CreateStoreInput } from '@/src/schemas/store.schema';
+import { CreateStoreInput, UpdateStoreInput } from '@/src/schemas/store.schema';
 
 export type StoreFormData = CreateStoreInput;
 
+// Tipo flexible que acepta tanto CreateStoreInput como UpdateStoreInput
+type FlexibleStoreFormData = CreateStoreInput | UpdateStoreInput;
+
 interface StoreFormFieldsProps {
-  register: UseFormRegister<StoreFormData>;
-  errors: FieldErrors<StoreFormData>;
+  register: UseFormRegister<FlexibleStoreFormData>;
+  errors: FieldErrors<FlexibleStoreFormData>;
 }
 
 export default function StoreFormFields({ register, errors }: StoreFormFieldsProps) {
