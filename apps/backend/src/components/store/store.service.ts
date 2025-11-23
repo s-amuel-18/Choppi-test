@@ -5,6 +5,7 @@ import { Store } from './store.entity';
 import { GetStoresQueryDto } from './dto/get-stores-query.dto';
 import { PaginatedStoreResponseDto } from './dto/paginated-store-response.dto';
 import { CreateStoreDto } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Injectable()
 export class StoreService {
@@ -93,5 +94,26 @@ export class StoreService {
     });
 
     return await this.storeRepository.save(store);
+  }
+
+  /**
+   * Actualiza una tienda existente
+   */
+  async update(id: string, updateStoreDto: UpdateStoreDto): Promise<Store> {
+    const store = await this.findOne(id);
+
+    // Actualizar solo los campos proporcionados
+    Object.assign(store, updateStoreDto);
+
+    await this.storeRepository.save(store);
+    return await this.findOne(id);
+  }
+
+  /**
+   * Elimina una tienda existente
+   */
+  async remove(id: string): Promise<void> {
+    const store = await this.findOne(id);
+    await this.storeRepository.remove(store);
   }
 }

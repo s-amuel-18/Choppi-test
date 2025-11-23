@@ -376,4 +376,531 @@ describe('Store (e2e)', () => {
       expect(createdStore.isActive).toBe(true);
     });
   });
+
+  describe('PUT /stores/:id', () => {
+    it('debería actualizar una tienda existente con autenticación válida', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Original',
+        description: 'Descripción original',
+        address: 'Dirección Original 123',
+        phone: '+1234567890',
+        email: 'original@tienda.com',
+        isActive: true,
+      });
+
+      const updateData = {
+        name: 'Tienda Actualizada',
+        description: 'Descripción actualizada',
+        address: 'Nueva Dirección 456',
+        phone: '+9876543210',
+        email: 'actualizada@tienda.com',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      expectApiResponse(response, true);
+      const updatedStore = getResponseData<Store>(response);
+
+      expect(updatedStore).toHaveProperty('id', store.id);
+      expect(updatedStore).toHaveProperty('name', updateData.name);
+      expect(updatedStore).toHaveProperty(
+        'description',
+        updateData.description,
+      );
+      expect(updatedStore).toHaveProperty('address', updateData.address);
+      expect(updatedStore).toHaveProperty('phone', updateData.phone);
+      expect(updatedStore).toHaveProperty('email', updateData.email);
+      expect(updatedStore).toHaveProperty('isActive', true);
+      expect(updatedStore).toHaveProperty('createdAt');
+      expect(updatedStore).toHaveProperty('updatedAt');
+    });
+
+    it('debería actualizar solo los campos proporcionados', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Parcial',
+        description: 'Descripción original',
+        address: 'Dirección Original 789',
+        phone: '+1111111111',
+        email: 'parcial@tienda.com',
+        isActive: true,
+      });
+
+      const updateData = {
+        name: 'Solo Nombre Actualizado',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      const updatedStore = getResponseData<Store>(response);
+
+      expect(updatedStore.name).toBe(updateData.name);
+      expect(updatedStore.description).toBe(store.description);
+      expect(updatedStore.address).toBe(store.address);
+      expect(updatedStore.phone).toBe(store.phone);
+      expect(updatedStore.email).toBe(store.email);
+    });
+
+    it('debería rechazar la actualización sin token JWT', async () => {
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Sin Auth',
+      });
+
+      const updateData = {
+        name: 'Intento de Actualización',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .send(updateData)
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+    });
+
+    it('debería rechazar la actualización con token inválido', async () => {
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Token Inválido',
+      });
+
+      const updateData = {
+        name: 'Intento de Actualización',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', 'Bearer invalid-token')
+        .send(updateData)
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+    });
+
+    it('debería retornar 404 cuando la tienda no existe', async () => {
+      const token = await getAuthToken();
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+
+      const updateData = {
+        name: 'Tienda Inexistente',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${nonExistentId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(404);
+
+      expectErrorResponse(response, 404);
+    });
+
+    it('debería retornar 400 cuando el ID tiene formato inválido', async () => {
+      const token = await getAuthToken();
+      const invalidId = 'invalid-id-format';
+
+      const updateData = {
+        name: 'Tienda ID Inválido',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${invalidId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(400);
+
+      expectErrorResponse(response, 400);
+    });
+
+    it('debería validar que el nombre tenga longitud mínima si se proporciona', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Válida',
+      });
+
+      const updateData = {
+        name: 'A', // Menos de 2 caracteres
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('statusCode', 400);
+    });
+
+    it('debería validar que el email tenga formato válido si se proporciona', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Email',
+      });
+
+      const updateData = {
+        email: 'email-invalido',
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('statusCode', 400);
+    });
+
+    it('debería validar la longitud mínima de la dirección si se proporciona', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Dirección',
+      });
+
+      const updateData = {
+        address: 'Call', // Menos de 5 caracteres
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('statusCode', 400);
+    });
+
+    it('debería validar la longitud mínima del teléfono si se proporciona', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Teléfono',
+      });
+
+      const updateData = {
+        phone: '123', // Menos de 10 caracteres
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('statusCode', 400);
+    });
+
+    it('debería permitir actualizar el estado isActive', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Activa',
+        isActive: true,
+      });
+
+      const updateData = {
+        isActive: false,
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      const updatedStore = getResponseData<Store>(response);
+      expect(updatedStore.isActive).toBe(false);
+    });
+
+    it('debería permitir actualizar la descripción a null', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Con Descripción',
+        description: 'Descripción original',
+      });
+
+      const updateData = {
+        description: null,
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      const updatedStore = getResponseData<Store>(response);
+      expect(updatedStore.description).toBeNull();
+    });
+
+    it('debería actualizar múltiples campos simultáneamente', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Múltiple',
+        description: 'Original',
+        address: 'Original 123',
+        phone: '+1111111111',
+        email: 'original@tienda.com',
+        isActive: true,
+      });
+
+      const updateData = {
+        name: 'Tienda Múltiple Actualizada',
+        description: 'Nueva descripción',
+        address: 'Nueva Dirección 999',
+        phone: '+9999999999',
+        email: 'nuevo@tienda.com',
+        isActive: false,
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      const updatedStore = getResponseData<Store>(response);
+      expect(updatedStore.name).toBe(updateData.name);
+      expect(updatedStore.description).toBe(updateData.description);
+      expect(updatedStore.address).toBe(updateData.address);
+      expect(updatedStore.phone).toBe(updateData.phone);
+      expect(updatedStore.email).toBe(updateData.email);
+      expect(updatedStore.isActive).toBe(updateData.isActive);
+    });
+
+    it('debería mantener los valores originales si se envía un objeto vacío', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Sin Cambios',
+        description: 'Descripción original',
+        address: 'Dirección original',
+        phone: '+1234567890',
+        email: 'original@tienda.com',
+        isActive: true,
+      });
+
+      const updateData = {};
+
+      const response = await request(app.getHttpServer())
+        .put(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateData)
+        .expect(200);
+
+      const updatedStore = getResponseData<Store>(response);
+      expect(updatedStore.name).toBe(store.name);
+      expect(updatedStore.description).toBe(store.description);
+      expect(updatedStore.address).toBe(store.address);
+      expect(updatedStore.phone).toBe(store.phone);
+      expect(updatedStore.email).toBe(store.email);
+      expect(updatedStore.isActive).toBe(store.isActive);
+    });
+  });
+
+  describe('DELETE /stores/:id', () => {
+    it('debería eliminar una tienda existente con autenticación válida', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda a Eliminar',
+        description: 'Esta tienda será eliminada',
+        address: 'Dirección de Eliminación 123',
+        phone: '+1234567890',
+        email: 'eliminar@tienda.com',
+        isActive: true,
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Tienda eliminada exitosamente',
+      );
+
+      // Verificar que la tienda ya no existe
+      const getResponse = await request(app.getHttpServer())
+        .get(`/stores/${store.id}`)
+        .expect(404);
+
+      expectErrorResponse(getResponse, 404);
+    });
+
+    it('debería rechazar la eliminación sin token JWT', async () => {
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Sin Auth',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+
+      // Verificar que la tienda aún existe
+      const getResponse = await request(app.getHttpServer())
+        .get(`/stores/${store.id}`)
+        .expect(200);
+
+      expect(getResponse.body.success).toBe(true);
+    });
+
+    it('debería rechazar la eliminación con token inválido', async () => {
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Token Inválido',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .set('Authorization', 'Bearer invalid-token')
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+
+      // Verificar que la tienda aún existe
+      const getResponse = await request(app.getHttpServer())
+        .get(`/stores/${store.id}`)
+        .expect(200);
+
+      expect(getResponse.body.success).toBe(true);
+    });
+
+    it('debería retornar 404 cuando la tienda no existe', async () => {
+      const token = await getAuthToken();
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${nonExistentId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
+
+      expectErrorResponse(response, 404);
+    });
+
+    it('debería retornar 400 cuando el ID tiene formato inválido', async () => {
+      const token = await getAuthToken();
+      const invalidId = 'invalid-id-format';
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${invalidId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400);
+
+      expectErrorResponse(response, 400);
+    });
+
+    it('debería eliminar una tienda inactiva', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Inactiva a Eliminar',
+        isActive: false,
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('success', true);
+
+      // Verificar que la tienda ya no existe
+      const getResponse = await request(app.getHttpServer())
+        .get(`/stores/${store.id}`)
+        .expect(404);
+
+      expectErrorResponse(getResponse, 404);
+    });
+
+    it('debería eliminar una tienda con todos sus campos', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Completa',
+        description: 'Descripción completa',
+        address: 'Dirección Completa 456',
+        phone: '+9876543210',
+        email: 'completa@tienda.com',
+        isActive: true,
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('success', true);
+
+      // Verificar que la tienda ya no existe
+      const getResponse = await request(app.getHttpServer())
+        .get(`/stores/${store.id}`)
+        .expect(404);
+
+      expectErrorResponse(getResponse, 404);
+    });
+
+    it('debería permitir eliminar múltiples tiendas secuencialmente', async () => {
+      const token = await getAuthToken();
+      const store1 = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda 1',
+      });
+      const store2 = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda 2',
+      });
+      const store3 = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda 3',
+      });
+
+      // Eliminar primera tienda
+      await request(app.getHttpServer())
+        .delete(`/stores/${store1.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // Eliminar segunda tienda
+      await request(app.getHttpServer())
+        .delete(`/stores/${store2.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // Eliminar tercera tienda
+      await request(app.getHttpServer())
+        .delete(`/stores/${store3.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // Verificar que todas las tiendas fueron eliminadas
+      await request(app.getHttpServer())
+        .get(`/stores/${store1.id}`)
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .get(`/stores/${store2.id}`)
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .get(`/stores/${store3.id}`)
+        .expect(404);
+    });
+
+    it('debería retornar mensaje de éxito después de eliminar', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository, {
+        name: 'Tienda Mensaje',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/stores/${store.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Tienda eliminada exitosamente');
+    });
+  });
 });

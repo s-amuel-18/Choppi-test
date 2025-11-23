@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Query,
   Param,
@@ -27,6 +29,7 @@ import { GetStoresQueryDto } from './dto/get-stores-query.dto';
 import { PaginatedStoreResponseDto } from './dto/paginated-store-response.dto';
 import { StoreResponseDto } from './dto/store-response.dto';
 import { CreateStoreDto } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 @ApiTags('stores')
 @Controller('stores')
@@ -142,5 +145,152 @@ export class StoreController {
   })
   async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.storeService.findOne(id);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Actualizar una tienda',
+    description:
+      'Actualiza los datos de una tienda existente. Requiere autenticación JWT. Solo se actualizan los campos proporcionados.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único de la tienda (UUID)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @ApiBody({
+    type: UpdateStoreDto,
+    description:
+      'Datos de la tienda a actualizar (todos los campos son opcionales)',
+    examples: {
+      example1: {
+        summary: 'Actualizar nombre y dirección',
+        value: {
+          name: 'Tienda Actualizada',
+          address: 'Nueva Dirección 789',
+        },
+      },
+      example2: {
+        summary: 'Desactivar tienda',
+        value: {
+          isActive: false,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tienda actualizada exitosamente',
+    type: StoreResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Datos de entrada inválidos',
+    schema: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: false,
+        },
+        message: {
+          type: 'string',
+          example: 'Error de validación',
+        },
+        errors: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'No autorizado - Se requiere token JWT válido',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 401,
+        },
+        message: {
+          type: 'string',
+          example: 'Unauthorized',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Tienda no encontrada',
+  })
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateStoreDto: UpdateStoreDto,
+  ) {
+    return await this.storeService.update(id, updateStoreDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Eliminar una tienda',
+    description:
+      'Elimina una tienda existente. Requiere autenticación JWT. Esta acción no se puede deshacer.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único de la tienda (UUID)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tienda eliminada exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: true,
+        },
+        message: {
+          type: 'string',
+          example: 'Tienda eliminada exitosamente',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'No autorizado - Se requiere token JWT válido',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 401,
+        },
+        message: {
+          type: 'string',
+          example: 'Unauthorized',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Tienda no encontrada',
+  })
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.storeService.remove(id);
+    return {
+      success: true,
+      message: 'Tienda eliminada exitosamente',
+    };
   }
 }
