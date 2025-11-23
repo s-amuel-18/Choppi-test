@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { seedStores } from './store.seed';
 import { seedProducts } from './product.seed';
+import { seedStoreProducts } from './store-product.seed';
 
 /**
  * Ejecuta todos los seeds disponibles
@@ -15,6 +16,10 @@ export async function runSeeds(dataSource: DataSource): Promise<void> {
 
     // Ejecutar seed de productos
     await seedProducts(dataSource);
+    console.log('');
+
+    // Ejecutar seed de productos de tiendas
+    await seedStoreProducts(dataSource);
 
     console.log('\n✨ Proceso de seeds completado exitosamente.');
   } catch (error) {

@@ -2,21 +2,25 @@
 
 import Link from 'next/link';
 import { useProducts } from '@/src/hooks/useProducts';
+import { useStoreList } from '@/src/hooks/useStoreList';
 import ConfirmModal from '@/src/components/ConfirmModal';
 import Pagination from '@/src/components/Pagination';
 
 export default function ProductsPage() {
   const {
     products,
+    storeProducts,
     loading,
     error,
     pagination,
     searchTerm,
     itemsPerPage,
+    selectedStoreId,
     deletingId,
     deleteModal,
     errorModal,
     setSearchTerm,
+    setSelectedStoreId,
     clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
@@ -25,6 +29,14 @@ export default function ProductsPage() {
     handleDeleteCancel,
     closeErrorModal,
   } = useProducts(5);
+
+  const { stores, loading: storesLoading } = useStoreList();
+
+  // Determinar qué datos mostrar
+  const displayProducts = selectedStoreId
+    ? storeProducts.map((sp) => sp.product)
+    : products;
+  const displayData = selectedStoreId ? storeProducts : null;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-ES', {
@@ -76,9 +88,25 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Search */}
+      {/* Store Selector and Search */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
+          {/* Store Selector */}
+          <div className="w-full sm:w-auto">
+            <select
+              className="select select-bordered w-full"
+              value={selectedStoreId || ''}
+              onChange={(e) => setSelectedStoreId(e.target.value || null)}
+              disabled={loading || storesLoading}
+            >
+              <option value="">Todas las tiendas</option>
+              {stores.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="flex-1">
             <label className="input input-bordered flex items-center gap-2">
               <svg
@@ -149,7 +177,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Table */}
-      {loading && products.length === 0 ? (
+      {loading && displayProducts.length === 0 ? (
         <div className="flex justify-center items-center py-12">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
@@ -161,67 +189,79 @@ export default function ProductsPage() {
                 <tr>
                   <th>Nombre</th>
                   <th>Descripción</th>
-                  <th>Precio Original</th>
+                  {selectedStoreId ? (
+                    <>
+                      <th>Precio de la Tienda</th>
+                      <th>Stock</th>
+                    </>
+                  ) : (
+                    <th>Precio Original</th>
+                  )}
                   <th>Categoría</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {products.length > 0 ? (
-                  products.map((product) => (
-                    <tr key={product.id}>
-                      <td className="font-medium">{product.name}</td>
-                      <td className="max-w-md truncate">
-                        {product.description || (
-                          <span className="text-base-content/50">
-                            Sin descripción
-                          </span>
-                        )}
-                      </td>
-                      <td>{formatPrice(product.originalPrice)}</td>
-                      <td>
-                        {product.category ? (
-                          <span className="badge badge-outline">
-                            {product.category}
-                          </span>
+                {displayProducts.length > 0 ? (
+                  displayProducts.map((product) => {
+                    const storeProduct = displayData?.find(
+                      (sp) => sp.productId === product.id
+                    );
+                    return (
+                      <tr key={product.id}>
+                        <td className="font-medium">{product.name}</td>
+                        <td className="max-w-md truncate">
+                          {product.description || (
+                            <span className="text-base-content/50">
+                              Sin descripción
+                            </span>
+                          )}
+                        </td>
+                        {selectedStoreId ? (
+                          <>
+                            <td>
+                              {storeProduct?.storePrice !== null &&
+                              storeProduct?.storePrice !== undefined ? (
+                                formatPrice(storeProduct.storePrice)
+                              ) : (
+                                <span className="text-base-content/50">
+                                  Sin precio
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  (storeProduct?.stock ?? 0) > 0
+                                    ? 'badge-success'
+                                    : 'badge-error'
+                                }`}
+                              >
+                                {storeProduct?.stock ?? 0}
+                              </span>
+                            </td>
+                          </>
                         ) : (
-                          <span className="text-base-content/50">
-                            Sin categoría
-                          </span>
+                          <td>{formatPrice(product.originalPrice)}</td>
                         )}
-                      </td>
-                      <td>
-                        <div className="flex gap-2">
-                          <Link
-                            href={`/products/${product.id}/edit`}
-                            className="btn btn-sm btn-ghost"
-                            title="Editar"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              strokeLinejoin="round"
-                              strokeLinecap="round"
-                              strokeWidth="2"
-                              fill="none"
-                              stroke="currentColor"
-                              className="size-4"
+                        <td>
+                          {product.category ? (
+                            <span className="badge badge-outline">
+                              {product.category}
+                            </span>
+                          ) : (
+                            <span className="text-base-content/50">
+                              Sin categoría
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/products/${product.id}/edit`}
+                              className="btn btn-sm btn-ghost"
+                              title="Editar"
                             >
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                          </Link>
-                          <button
-                            onClick={() =>
-                              handleDeleteClick(product.id, product.name)
-                            }
-                            className="btn btn-sm btn-ghost text-error"
-                            title="Eliminar"
-                            disabled={deletingId === product.id}
-                          >
-                            {deletingId === product.id ? (
-                              <span className="loading loading-spinner loading-sm"></span>
-                            ) : (
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -232,19 +272,48 @@ export default function ProductsPage() {
                                 stroke="currentColor"
                                 className="size-4"
                               >
-                                <path d="M3 6h18"></path>
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                               </svg>
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            </Link>
+                            <button
+                              onClick={() =>
+                                handleDeleteClick(product.id, product.name)
+                              }
+                              className="btn btn-sm btn-ghost text-error"
+                              title="Eliminar"
+                              disabled={deletingId === product.id}
+                            >
+                              {deletingId === product.id ? (
+                                <span className="loading loading-spinner loading-sm"></span>
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  strokeLinejoin="round"
+                                  strokeLinecap="round"
+                                  strokeWidth="2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  className="size-4"
+                                >
+                                  <path d="M3 6h18"></path>
+                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={5} className="text-center py-8">
+                    <td
+                      colSpan={selectedStoreId ? 6 : 5}
+                      className="text-center py-8"
+                    >
                       <p className="text-base-content/60">
                         {searchTerm
                           ? 'No se encontraron productos que coincidan con el término de búsqueda'

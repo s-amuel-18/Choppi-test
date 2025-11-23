@@ -117,6 +117,68 @@ class ProductService {
   }
 
   /**
+   * Obtiene los productos de una tienda con paginación
+   */
+  async findStoreProducts(
+    storeId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      q?: string;
+      inStock?: boolean;
+    }
+  ): Promise<{
+    data: Array<{
+      id: string;
+      storeId: string;
+      productId: string;
+      stock: number;
+      storePrice: number | null;
+      createdAt: string;
+      updatedAt: string;
+      product: Product;
+    }>;
+    meta: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    try {
+      const response = await apiClient.get<
+        ApiResponse<{
+          data: Array<{
+            id: string;
+            storeId: string;
+            productId: string;
+            stock: number;
+            storePrice: number | null;
+            createdAt: string;
+            updatedAt: string;
+            product: Product;
+          }>;
+          meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+          };
+        }>
+      >(`/stores/${storeId}/products`, { params });
+
+      if (response.data.success && response.data.data) {
+        // El backend devuelve { data: [...], meta: {...} }
+        return response.data.data;
+      }
+
+      throw new Error('Respuesta inválida del servidor');
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Maneja errores de la API
    */
   private handleError(error: unknown): ApiError {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { productService } from '@/src/services/product.service';
 import { Product, ApiError } from '@/src/types/product';
+import { StoreProduct } from '@/src/types/store-product';
 
 interface PaginatedProducts {
   data: Product[];
@@ -13,12 +14,14 @@ interface PaginatedProducts {
 interface UseProductsReturn {
   // Estado
   products: Product[];
+  storeProducts: StoreProduct[];
   loading: boolean;
   error: string;
   pagination: PaginatedProducts;
   searchTerm: string;
   currentPage: number;
   itemsPerPage: number;
+  selectedStoreId: string | null;
   deletingId: string | null;
   deleteModal: {
     isOpen: boolean;
@@ -32,6 +35,7 @@ interface UseProductsReturn {
 
   // Acciones
   setSearchTerm: (term: string) => void;
+  setSelectedStoreId: (storeId: string | null) => void;
   clearSearch: () => void;
   handlePageChange: (page: number) => void;
   handleItemsPerPageChange: (itemsPerPage: number) => void;
@@ -46,11 +50,13 @@ export function useProducts(
   initialItemsPerPage: number = 10
 ): UseProductsReturn {
   const [products, setProducts] = useState<Product[]>([]);
+  const [storeProducts, setStoreProducts] = useState<StoreProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginatedProducts>({
     data: [],
     total: 0,
@@ -77,22 +83,48 @@ export function useProducts(
   });
 
   const loadProducts = useCallback(
-    async (page: number = 1, search: string = '', limit: number = 10) => {
+    async (
+      page: number = 1,
+      search: string = '',
+      limit: number = 10,
+      storeId: string | null = null
+    ) => {
       setLoading(true);
       setError('');
 
       try {
-        const result = await productService.findAll({
-          page,
-          limit,
-          q: search || undefined,
-        });
-        setProducts(result.data);
-        setPagination(result);
+        if (storeId) {
+          // Cargar productos de la tienda
+          const result = await productService.findStoreProducts(storeId, {
+            page,
+            limit,
+            q: search || undefined,
+          });
+          setStoreProducts(result.data);
+          setPagination({
+            data: [],
+            total: result.meta.total,
+            page: result.meta.page,
+            limit: result.meta.limit,
+            totalPages: result.meta.totalPages,
+          });
+          setProducts([]);
+        } else {
+          // Cargar todos los productos
+          const result = await productService.findAll({
+            page,
+            limit,
+            q: search || undefined,
+          });
+          setProducts(result.data);
+          setPagination(result);
+          setStoreProducts([]);
+        }
       } catch (err) {
         const apiError = err as ApiError;
         setError(apiError.message || 'Error al cargar los productos');
         setProducts([]);
+        setStoreProducts([]);
       } finally {
         setLoading(false);
       }
@@ -100,17 +132,17 @@ export function useProducts(
     []
   );
 
-  // Cargar productos cuando cambian la página o items por página
+  // Cargar productos cuando cambian la página, items por página o tienda seleccionada
   useEffect(() => {
-    loadProducts(currentPage, searchTerm, itemsPerPage);
+    loadProducts(currentPage, searchTerm, itemsPerPage, selectedStoreId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, selectedStoreId]);
 
   // Debounce para la búsqueda - cuando cambia searchTerm, resetea a página 1 y busca
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentPage === 1) {
-        loadProducts(1, searchTerm, itemsPerPage);
+        loadProducts(1, searchTerm, itemsPerPage, selectedStoreId);
       } else {
         setCurrentPage(1);
       }
@@ -152,7 +184,12 @@ export function useProducts(
       // Cerrar el modal
       setDeleteModal({ isOpen: false, productId: null, productName: '' });
       // Recargar la lista
-      await loadProducts(currentPage, searchTerm, itemsPerPage);
+      await loadProducts(
+        currentPage,
+        searchTerm,
+        itemsPerPage,
+        selectedStoreId
+      );
     } catch (err) {
       const apiError = err as ApiError;
       // Cerrar el modal de confirmación
@@ -182,24 +219,32 @@ export function useProducts(
   }, []);
 
   const reload = useCallback(async () => {
-    await loadProducts(currentPage, searchTerm, itemsPerPage);
-  }, [currentPage, searchTerm, itemsPerPage, loadProducts]);
+    await loadProducts(currentPage, searchTerm, itemsPerPage, selectedStoreId);
+  }, [currentPage, searchTerm, itemsPerPage, selectedStoreId, loadProducts]);
+
+  const handleStoreChange = useCallback((storeId: string | null) => {
+    setSelectedStoreId(storeId);
+    setCurrentPage(1);
+  }, []);
 
   return {
     // Estado
     products,
+    storeProducts,
     loading,
     error,
     pagination,
     searchTerm,
     currentPage,
     itemsPerPage,
+    selectedStoreId,
     deletingId,
     deleteModal,
     errorModal,
 
     // Acciones
     setSearchTerm,
+    setSelectedStoreId: handleStoreChange,
     clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
