@@ -25,6 +25,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('auth', 'Endpoints de autenticación')
     .addTag('users', 'Endpoints de usuarios')
+    .addTag('stores', 'Endpoints de tiendas')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Ingresa el token JWT',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

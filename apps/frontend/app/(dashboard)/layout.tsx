@@ -14,14 +14,16 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
+  const drawerId = 'my-drawer-4';
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <DashboardNavbar />
-        <main className="flex-1 p-6 bg-base-300">{children}</main>
+    <div className="drawer lg:drawer-open">
+      <input id={drawerId} type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content">
+        <DashboardNavbar drawerId={drawerId} title="Choppi App" />
+        <div className="p-4">{children}</div>
       </div>
+      <Sidebar drawerId={drawerId} />
     </div>
   );
 }
-

@@ -124,6 +124,11 @@ describe('Auth (e2e)', () => {
       expect(response.body.data).toHaveProperty('accessToken');
       expect(response.body.data).toHaveProperty('user');
       expect(response.body.data.user.email).toBe(user.email);
+      expect(response.body.data.user.name).toBe(user.name);
+      expect(response.body.data.user.id).toBe(user.id);
+      expect(response.body.data.user).not.toHaveProperty('password');
+      expect(typeof response.body.data.accessToken).toBe('string');
+      expect(response.body.data.accessToken.length).toBeGreaterThan(0);
     });
 
     it('debería rechazar login con contraseña incorrecta', async () => {
@@ -135,7 +140,7 @@ describe('Auth (e2e)', () => {
         },
       );
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/login')
         .send({
           email: user.email,
@@ -145,13 +150,95 @@ describe('Auth (e2e)', () => {
     });
 
     it('debería rechazar login con email inexistente', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/login')
         .send({
           email: 'nonexistent@example.com',
           password: 'Test1234!',
         })
         .expect(401);
+    });
+
+    it('debería validar que el email sea requerido', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          password: 'Test1234!',
+        })
+        .expect(400);
+
+      expect(Array.isArray(response.body.message)).toBe(true);
+      expect(response.body.statusCode).toBe(400);
+    });
+
+    it('debería validar que el email tenga formato válido', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'invalid-email',
+          password: 'Test1234!',
+        })
+        .expect(400);
+    });
+
+    it('debería validar que la contraseña sea requerida', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'test@example.com',
+        })
+        .expect(400);
+    });
+
+    it('debería retornar un token JWT válido en el login exitoso', async () => {
+      const { user, plainPassword } =
+        await AuthFixtures.createUserWithPlainPassword(
+          userRepository,
+          'Test1234!',
+          {
+            email: 'jwt@example.com',
+            name: 'JWT User',
+          },
+        );
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: user.email,
+          password: plainPassword,
+        })
+        .expect(200);
+
+      const accessToken = response.body.data.accessToken;
+      expect(accessToken).toBeDefined();
+      expect(typeof accessToken).toBe('string');
+      // Un JWT tiene 3 partes separadas por puntos
+      expect(accessToken.split('.')).toHaveLength(3);
+    });
+
+    it('debería retornar información del usuario sin la contraseña', async () => {
+      const { user, plainPassword } =
+        await AuthFixtures.createUserWithPlainPassword(
+          userRepository,
+          'Test1234!',
+          {
+            email: 'userinfo@example.com',
+            name: 'User Info',
+          },
+        );
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: user.email,
+          password: plainPassword,
+        })
+        .expect(200);
+
+      expect(response.body.data.user).not.toHaveProperty('password');
+      expect(response.body.data.user).toHaveProperty('id');
+      expect(response.body.data.user).toHaveProperty('email');
+      expect(response.body.data.user).toHaveProperty('name');
     });
   });
 });

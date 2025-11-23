@@ -7,9 +7,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { UserModule } from './components/user/user.module';
 import { AuthModule } from './components/auth/auth.module';
+import { StoreModule } from './components/store/store.module';
 
 @Module({
-  imports: [AppConfigModule, DatabaseModule, UserModule, AuthModule],
+  imports: [AppConfigModule, DatabaseModule, UserModule, AuthModule, StoreModule],
   controllers: [AppController],
   providers: [
     AppService,

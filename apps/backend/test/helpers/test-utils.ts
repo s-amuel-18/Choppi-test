@@ -38,13 +38,7 @@ export function expectErrorResponse(
   expectedStatusCode: number,
 ): void {
   expect(response.status).toBe(expectedStatusCode);
-  // Los errores pueden tener diferentes estructuras dependiendo del tipo
-  // pero generalmente tienen message y statusCode
-  if (response.body.message) {
-    expect(response.body).toHaveProperty('message');
-  }
-  if (response.body.statusCode) {
-    expect(response.body.statusCode).toBe(expectedStatusCode);
-  }
+  expect(response.body).toHaveProperty('message');
+  expect(response.body).toHaveProperty('statusCode');
+  expect(response.body.statusCode).toBe(expectedStatusCode);
 }
-
