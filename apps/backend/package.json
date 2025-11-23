@@ -22,7 +22,9 @@
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage",
     "test:db:up": "docker-compose up -d postgres-test",
     "test:db:down": "docker-compose down postgres-test",
-    "test:db:logs": "docker-compose logs -f postgres-test"
+    "test:db:logs": "docker-compose logs -f postgres-test",
+    "seed": "ts-node -r tsconfig-paths/register src/seeds/run-seeds.ts",
+    "seed:stores": "ts-node -r tsconfig-paths/register src/seeds/run-seeds.ts"
   },
   "engines": {
     "npm": ">=10.0.0",
