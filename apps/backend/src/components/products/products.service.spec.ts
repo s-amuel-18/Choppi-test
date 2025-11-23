@@ -60,6 +60,7 @@ describe('ProductsService', () => {
       findOne: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
+      remove: jest.fn(),
     };
 
     const mockStoreProductRepo = {
@@ -67,6 +68,7 @@ describe('ProductsService', () => {
       create: jest.fn(),
       save: jest.fn(),
       remove: jest.fn(),
+      delete: jest.fn(),
       createQueryBuilder: jest.fn(),
     };
 
@@ -393,6 +395,45 @@ describe('ProductsService', () => {
       await expect(
         service.removeProductFromStore('store-id-1', 'non-existent-product'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('remove', () => {
+    it('debería eliminar un producto exitosamente', async () => {
+      productRepository.findOne.mockResolvedValue(mockProduct);
+      storeProductRepository.delete.mockResolvedValue({ affected: 1, raw: [] });
+      productRepository.remove.mockResolvedValue(mockProduct);
+
+      await service.remove('product-id-1');
+
+      expect(productRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'product-id-1' },
+      });
+      expect(storeProductRepository.delete).toHaveBeenCalledWith({
+        productId: 'product-id-1',
+      });
+      expect(productRepository.remove).toHaveBeenCalledWith(mockProduct);
+    });
+
+    it('debería lanzar NotFoundException cuando el producto no existe', async () => {
+      productRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.remove('non-existent-product')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('debería eliminar todas las relaciones con tiendas antes de eliminar el producto', async () => {
+      productRepository.findOne.mockResolvedValue(mockProduct);
+      storeProductRepository.delete.mockResolvedValue({ affected: 2, raw: [] });
+      productRepository.remove.mockResolvedValue(mockProduct);
+
+      await service.remove('product-id-1');
+
+      expect(storeProductRepository.delete).toHaveBeenCalledWith({
+        productId: 'product-id-1',
+      });
+      expect(productRepository.remove).toHaveBeenCalledWith(mockProduct);
     });
   });
 });

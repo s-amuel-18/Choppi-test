@@ -106,6 +106,17 @@ class ProductService {
   }
 
   /**
+   * Elimina un producto
+   */
+  async remove(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/products/${id}`);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Maneja errores de la API
    */
   private handleError(error: unknown): ApiError {

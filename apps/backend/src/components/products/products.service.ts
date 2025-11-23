@@ -328,4 +328,20 @@ export class ProductsService {
 
     await this.storeProductRepository.remove(storeProduct);
   }
+
+  /**
+   * Elimina un producto existente
+   * También elimina todas las relaciones con tiendas (store_products)
+   */
+  async remove(id: string): Promise<void> {
+    const product = await this.findOne(id);
+
+    // Eliminar todas las relaciones con tiendas primero
+    await this.storeProductRepository.delete({
+      productId: id,
+    });
+
+    // Eliminar el producto
+    await this.productRepository.remove(product);
+  }
 }

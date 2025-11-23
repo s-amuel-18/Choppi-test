@@ -276,6 +276,64 @@ export class ProductsController {
   ) {
     return await this.productsService.update(id, updateProductDto);
   }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Eliminar un producto',
+    description:
+      'Elimina un producto existente. Requiere autenticación JWT. Esta acción también eliminará todas las relaciones del producto con las tiendas. Esta acción no se puede deshacer.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del producto (UUID)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Producto eliminado exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: true,
+        },
+        message: {
+          type: 'string',
+          example: 'Producto eliminado exitosamente',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'No autorizado - Se requiere token JWT válido',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 401,
+        },
+        message: {
+          type: 'string',
+          example: 'Unauthorized',
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'Producto no encontrado',
+  })
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.productsService.remove(id);
+    return {
+      success: true,
+      message: 'Producto eliminado exitosamente',
+    };
+  }
 }
 
 @ApiTags('stores')

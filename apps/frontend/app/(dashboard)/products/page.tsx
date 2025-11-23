@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useProducts } from '@/src/hooks/useProducts';
+import ConfirmModal from '@/src/components/ConfirmModal';
 import Pagination from '@/src/components/Pagination';
 
 export default function ProductsPage() {
@@ -12,10 +13,17 @@ export default function ProductsPage() {
     pagination,
     searchTerm,
     itemsPerPage,
+    deletingId,
+    deleteModal,
+    errorModal,
     setSearchTerm,
     clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
+    handleDeleteClick,
+    handleDeleteConfirm,
+    handleDeleteCancel,
+    closeErrorModal,
   } = useProducts(5);
 
   const formatPrice = (price: number) => {
@@ -185,25 +193,6 @@ export default function ProductsPage() {
                       <td>
                         <div className="flex gap-2">
                           <Link
-                            href={`/products/${product.id}`}
-                            className="btn btn-sm btn-ghost"
-                            title="Ver detalles"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              strokeLinejoin="round"
-                              strokeLinecap="round"
-                              strokeWidth="2"
-                              fill="none"
-                              stroke="currentColor"
-                              className="size-4"
-                            >
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                          </Link>
-                          <Link
                             href={`/products/${product.id}/edit`}
                             className="btn btn-sm btn-ghost"
                             title="Editar"
@@ -222,6 +211,33 @@ export default function ProductsPage() {
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                           </Link>
+                          <button
+                            onClick={() =>
+                              handleDeleteClick(product.id, product.name)
+                            }
+                            className="btn btn-sm btn-ghost text-error"
+                            title="Eliminar"
+                            disabled={deletingId === product.id}
+                          >
+                            {deletingId === product.id ? (
+                              <span className="loading loading-spinner loading-sm"></span>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                strokeWidth="2"
+                                fill="none"
+                                stroke="currentColor"
+                                className="size-4"
+                              >
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                              </svg>
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -254,6 +270,31 @@ export default function ProductsPage() {
           />
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Producto"
+        message={`¿Estás seguro de que deseas eliminar el producto "${deleteModal.productName}"? Esta acción también eliminará todas las relaciones del producto con las tiendas. Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="error"
+        loading={deletingId !== null}
+      />
+
+      {/* Error Modal */}
+      <ConfirmModal
+        isOpen={errorModal.isOpen}
+        onClose={closeErrorModal}
+        onConfirm={closeErrorModal}
+        title="Error"
+        message={errorModal.message}
+        confirmText="Aceptar"
+        cancelText=""
+        confirmVariant="primary"
+      />
     </div>
   );
 }

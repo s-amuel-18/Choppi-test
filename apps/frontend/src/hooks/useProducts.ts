@@ -19,12 +19,26 @@ interface UseProductsReturn {
   searchTerm: string;
   currentPage: number;
   itemsPerPage: number;
+  deletingId: string | null;
+  deleteModal: {
+    isOpen: boolean;
+    productId: string | null;
+    productName: string;
+  };
+  errorModal: {
+    isOpen: boolean;
+    message: string;
+  };
 
   // Acciones
   setSearchTerm: (term: string) => void;
   clearSearch: () => void;
   handlePageChange: (page: number) => void;
   handleItemsPerPageChange: (itemsPerPage: number) => void;
+  handleDeleteClick: (id: string, name: string) => void;
+  handleDeleteConfirm: () => Promise<void>;
+  handleDeleteCancel: () => void;
+  closeErrorModal: () => void;
   reload: () => Promise<void>;
 }
 
@@ -43,6 +57,23 @@ export function useProducts(
     page: 1,
     limit: initialItemsPerPage,
     totalPages: 0,
+  });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: string | null;
+    productName: string;
+  }>({
+    isOpen: false,
+    productId: null,
+    productName: '',
+  });
+  const [errorModal, setErrorModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: '',
   });
 
   const loadProducts = useCallback(
@@ -104,6 +135,52 @@ export function useProducts(
     setCurrentPage(1);
   }, []);
 
+  const handleDeleteClick = useCallback((id: string, name: string) => {
+    setDeleteModal({
+      isOpen: true,
+      productId: id,
+      productName: name,
+    });
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteModal.productId) return;
+
+    setDeletingId(deleteModal.productId);
+    try {
+      await productService.remove(deleteModal.productId);
+      // Cerrar el modal
+      setDeleteModal({ isOpen: false, productId: null, productName: '' });
+      // Recargar la lista
+      await loadProducts(currentPage, searchTerm, itemsPerPage);
+    } catch (err) {
+      const apiError = err as ApiError;
+      // Cerrar el modal de confirmación
+      setDeleteModal({ isOpen: false, productId: null, productName: '' });
+      // Mostrar modal de error
+      setErrorModal({
+        isOpen: true,
+        message: apiError.message || 'Error al eliminar el producto',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  }, [
+    deleteModal.productId,
+    currentPage,
+    searchTerm,
+    itemsPerPage,
+    loadProducts,
+  ]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteModal({ isOpen: false, productId: null, productName: '' });
+  }, []);
+
+  const closeErrorModal = useCallback(() => {
+    setErrorModal({ isOpen: false, message: '' });
+  }, []);
+
   const reload = useCallback(async () => {
     await loadProducts(currentPage, searchTerm, itemsPerPage);
   }, [currentPage, searchTerm, itemsPerPage, loadProducts]);
@@ -117,12 +194,19 @@ export function useProducts(
     searchTerm,
     currentPage,
     itemsPerPage,
+    deletingId,
+    deleteModal,
+    errorModal,
 
     // Acciones
     setSearchTerm,
     clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
+    handleDeleteClick,
+    handleDeleteConfirm,
+    handleDeleteCancel,
+    closeErrorModal,
     reload,
   };
 }

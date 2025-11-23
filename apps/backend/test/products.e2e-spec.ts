@@ -499,4 +499,121 @@ describe('Products (e2e)', () => {
       expectErrorResponse(response, 404);
     });
   });
+
+  describe('DELETE /products/:id', () => {
+    it('debería eliminar un producto existente con autenticación válida', async () => {
+      const token = await getAuthToken();
+      const product = await ProductFixtures.createProduct(productRepository, {
+        name: 'Producto a Eliminar',
+        description: 'Este producto será eliminado',
+        originalPrice: 99.99,
+        category: 'Test',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/products/${product.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Producto eliminado exitosamente',
+      );
+
+      // Verificar que el producto ya no existe
+      await request(app.getHttpServer())
+        .get(`/products/${product.id}`)
+        .expect(404);
+    });
+
+    it('debería eliminar todas las relaciones con tiendas al eliminar un producto', async () => {
+      const token = await getAuthToken();
+      const store = await StoreFixtures.createStore(storeRepository);
+      const product = await ProductFixtures.createProduct(productRepository);
+
+      // Agregar producto a la tienda
+      await request(app.getHttpServer())
+        .post(`/stores/${store.id}/products`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ productId: product.id, stock: 50 })
+        .expect(201);
+
+      // Verificar que el producto está en la tienda
+      const listBefore = await request(app.getHttpServer())
+        .get(`/stores/${store.id}/products`)
+        .expect(200);
+
+      const listDataBefore = getResponseData<{
+        data: StoreProduct[];
+        meta: { total: number };
+      }>(listBefore);
+      expect(listDataBefore.meta.total).toBe(1);
+
+      // Eliminar el producto
+      await request(app.getHttpServer())
+        .delete(`/products/${product.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      // Verificar que las relaciones fueron eliminadas
+      const listAfter = await request(app.getHttpServer())
+        .get(`/stores/${store.id}/products`)
+        .expect(200);
+
+      const listDataAfter = getResponseData<{
+        data: StoreProduct[];
+        meta: { total: number };
+      }>(listAfter);
+      expect(listDataAfter.meta.total).toBe(0);
+    });
+
+    it('debería rechazar la eliminación sin token JWT', async () => {
+      const product = await ProductFixtures.createProduct(productRepository);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/products/${product.id}`)
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+
+      // Verificar que el producto aún existe
+      await request(app.getHttpServer())
+        .get(`/products/${product.id}`)
+        .expect(200);
+    });
+
+    it('debería rechazar la eliminación con token inválido', async () => {
+      const product = await ProductFixtures.createProduct(productRepository);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/products/${product.id}`)
+        .set('Authorization', 'Bearer invalid-token')
+        .expect(401);
+
+      expectErrorResponse(response, 401);
+    });
+
+    it('debería retornar 404 cuando el producto no existe', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(app.getHttpServer())
+        .delete('/products/00000000-0000-0000-0000-000000000000')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
+
+      expectErrorResponse(response, 404);
+    });
+
+    it('debería rechazar IDs inválidos', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(app.getHttpServer())
+        .delete('/products/invalid-id')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400);
+
+      expectErrorResponse(response, 400);
+    });
+  });
 });
