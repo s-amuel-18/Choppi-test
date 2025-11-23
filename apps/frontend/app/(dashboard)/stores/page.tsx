@@ -23,7 +23,7 @@ export default function StoresPage() {
     handleDeleteConfirm,
     handleDeleteCancel,
     closeErrorModal,
-  } = useStores(10);
+  } = useStores(5);
 
   return (
     <div className="w-full">

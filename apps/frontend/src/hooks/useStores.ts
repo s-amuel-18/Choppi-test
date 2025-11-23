@@ -103,17 +103,17 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
   }, [currentPage, itemsPerPage, loadStores]);
 
   // Debounce para la búsqueda
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentPage === 1) {
-        loadStores(1, searchTerm, itemsPerPage);
-      } else {
-        setCurrentPage(1);
-      }
-    }, 500);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (currentPage === 1) {
+  //       loadStores(1, searchTerm, itemsPerPage);
+  //     } else {
+  //       setCurrentPage(1);
+  //     }
+  //   }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, loadStores, currentPage, itemsPerPage]);
+  //   return () => clearTimeout(timer);
+  // }, [searchTerm, loadStores, currentPage, itemsPerPage]);
 
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
@@ -193,4 +193,3 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
     reload,
   };
 }
-
