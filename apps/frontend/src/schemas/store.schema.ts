@@ -55,6 +55,7 @@ export const updateStoreSchema = z.object({
     .max(20, 'El teléfono no puede exceder 20 caracteres')
     .optional(),
   email: z.string().email('El correo electrónico no es válido').optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type UpdateStoreInput = z.infer<typeof updateStoreSchema>;

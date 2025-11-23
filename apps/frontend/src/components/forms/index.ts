@@ -3,6 +3,7 @@ export { default as FormButton } from './FormButton';
 export { default as FormCard } from './FormCard';
 export { default as ErrorAlert } from './ErrorAlert';
 export { default as TextareaField } from './TextareaField';
+export { default as ToggleField } from './ToggleField';
 export { default as StoreFormFields } from './StoreFormFields';
 export type { StoreFormData } from './StoreFormFields';
 export type { CreateStoreInput } from '@/src/schemas/store.schema';

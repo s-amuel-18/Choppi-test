@@ -8,6 +8,7 @@ import {
   FormButton,
   ErrorAlert,
   StoreFormFields,
+  ToggleField,
 } from '@/src/components/forms';
 import {
   updateStoreSchema,
@@ -53,6 +54,7 @@ export default function EditStorePage() {
           address: store.address,
           phone: store.phone,
           email: store.email,
+          isActive: store.isActive,
         });
       } catch (error) {
         const apiError = error as ApiError;
@@ -142,6 +144,13 @@ export default function EditStorePage() {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <StoreFormFields register={register} errors={errors} />
+
+            <ToggleField
+              label="Estado de la Tienda"
+              description="Activa o desactiva la tienda. Las tiendas inactivas no estarán disponibles para los clientes."
+              error={errors.isActive?.message}
+              {...register('isActive')}
+            />
 
             <div className="flex gap-4 mt-6">
               <FormButton
