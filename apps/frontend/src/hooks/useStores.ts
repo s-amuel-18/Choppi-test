@@ -32,6 +32,7 @@ interface UseStoresReturn {
 
   // Acciones
   setSearchTerm: (term: string) => void;
+  clearSearch: () => void;
   handlePageChange: (page: number) => void;
   handleItemsPerPageChange: (itemsPerPage: number) => void;
   handleDeleteClick: (id: string, name: string) => void;
@@ -100,20 +101,22 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
   // Cargar stores cuando cambian la página o items por página
   useEffect(() => {
     loadStores(currentPage, searchTerm, itemsPerPage);
-  }, [currentPage, itemsPerPage, loadStores]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, itemsPerPage]);
 
-  // Debounce para la búsqueda
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     if (currentPage === 1) {
-  //       loadStores(1, searchTerm, itemsPerPage);
-  //     } else {
-  //       setCurrentPage(1);
-  //     }
-  //   }, 500);
+  // Debounce para la búsqueda - cuando cambia searchTerm, resetea a página 1 y busca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        loadStores(1, searchTerm, itemsPerPage);
+      } else {
+        setCurrentPage(1);
+      }
+    }, 500);
 
-  //   return () => clearTimeout(timer);
-  // }, [searchTerm, loadStores, currentPage, itemsPerPage]);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
@@ -123,6 +126,11 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
   const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Resetear a la primera página
+  }, []);
+
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+    setCurrentPage(1);
   }, []);
 
   const handleDeleteClick = useCallback((id: string, name: string) => {
@@ -184,6 +192,7 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
 
     // Acciones
     setSearchTerm,
+    clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
     handleDeleteClick,

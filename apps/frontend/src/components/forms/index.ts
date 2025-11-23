@@ -7,3 +7,6 @@ export { default as ToggleField } from './ToggleField';
 export { default as StoreFormFields } from './StoreFormFields';
 export type { StoreFormData } from './StoreFormFields';
 export type { CreateStoreInput } from '@/src/schemas/store.schema';
+export { default as ProductFormFields } from './ProductFormFields';
+export type { ProductFormData } from './ProductFormFields';
+export type { CreateProductInput } from '@/src/schemas/product.schema';

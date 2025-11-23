@@ -37,14 +37,32 @@ export async function createTestApp(): Promise<INestApplication> {
 
 /**
  * Limpia la base de datos de test
- * Elimina todas las tablas y las recrea
+ * Elimina todas las tablas en el orden correcto para respetar las claves foráneas
  */
 export async function cleanDatabase(dataSource: DataSource): Promise<void> {
-  const entities = dataSource.entityMetadatas;
+  const queryRunner = dataSource.createQueryRunner();
 
-  for (const entity of entities) {
-    const repository = dataSource.getRepository(entity.name);
-    await repository.clear();
+  try {
+    // Deshabilitar temporalmente las restricciones de claves foráneas
+    await queryRunner.query('SET session_replication_role = replica;');
+
+    // Obtener todas las tablas
+    const tables = await queryRunner.query(`
+      SELECT tablename FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename NOT LIKE 'pg_%'
+      ORDER BY tablename;
+    `);
+
+    // Eliminar datos de todas las tablas
+    for (const table of tables) {
+      await queryRunner.query(`DELETE FROM "${table.tablename}";`);
+    }
+
+    // Restaurar las restricciones de claves foráneas
+    await queryRunner.query('SET session_replication_role = DEFAULT;');
+  } finally {
+    await queryRunner.release();
   }
 }
 

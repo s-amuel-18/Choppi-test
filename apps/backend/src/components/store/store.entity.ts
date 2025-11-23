@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { StoreProduct } from '../products/store-product.entity';
 
 @Entity('stores')
 export class Store {
@@ -28,5 +29,8 @@ export class Store {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  @OneToMany(() => StoreProduct, (storeProduct) => storeProduct.store)
+  storeProducts: StoreProduct[];
 }
 

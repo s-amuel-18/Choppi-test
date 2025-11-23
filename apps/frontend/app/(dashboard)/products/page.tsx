@@ -1,37 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { useStores } from '@/src/hooks/useStores';
-import ConfirmModal from '@/src/components/ConfirmModal';
+import { useProducts } from '@/src/hooks/useProducts';
 import Pagination from '@/src/components/Pagination';
 
-export default function StoresPage() {
+export default function ProductsPage() {
   const {
-    stores,
+    products,
     loading,
     error,
     pagination,
     searchTerm,
     itemsPerPage,
-    deletingId,
-    deleteModal,
-    errorModal,
     setSearchTerm,
     clearSearch,
     handlePageChange,
     handleItemsPerPageChange,
-    handleDeleteClick,
-    handleDeleteConfirm,
-    handleDeleteCancel,
-    closeErrorModal,
-  } = useStores(5);
+  } = useProducts(5);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(price);
+  };
 
   return (
     <div className="w-full">
       {/* Title and Create Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold">Tiendas</h1>
-        <Link href="/stores/create" className="btn btn-primary">
+        <h1 className="text-3xl font-bold">Productos</h1>
+        <Link href="/products/create" className="btn btn-primary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -45,7 +44,7 @@ export default function StoresPage() {
             <path d="M12 5v14"></path>
             <path d="M5 12h14"></path>
           </svg>
-          Crear Tienda
+          Crear Producto
         </Link>
       </div>
 
@@ -90,7 +89,7 @@ export default function StoresPage() {
               <input
                 type="text"
                 className="grow"
-                placeholder="Buscar por nombre..."
+                placeholder="Buscar por nombre o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 disabled={loading}
@@ -132,7 +131,7 @@ export default function StoresPage() {
               <span>
                 {pagination.total === 0
                   ? 'No se encontraron resultados'
-                  : `Se encontraron ${pagination.total} tienda${
+                  : `Se encontraron ${pagination.total} producto${
                       pagination.total !== 1 ? 's' : ''
                     }`}
               </span>
@@ -142,7 +141,7 @@ export default function StoresPage() {
       </div>
 
       {/* Table */}
-      {loading && stores.length === 0 ? (
+      {loading && products.length === 0 ? (
         <div className="flex justify-center items-center py-12">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
@@ -153,34 +152,59 @@ export default function StoresPage() {
               <thead>
                 <tr>
                   <th>Nombre</th>
-                  <th>Dirección</th>
-                  <th>Teléfono</th>
-                  <th>Email</th>
-                  <th>Estado</th>
+                  <th>Descripción</th>
+                  <th>Precio Original</th>
+                  <th>Categoría</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {stores.length > 0 ? (
-                  stores.map((store) => (
-                    <tr key={store.id}>
-                      <td className="font-medium">{store.name}</td>
-                      <td>{store.address}</td>
-                      <td>{store.phone}</td>
-                      <td>{store.email}</td>
+                {products.length > 0 ? (
+                  products.map((product) => (
+                    <tr key={product.id}>
+                      <td className="font-medium">{product.name}</td>
+                      <td className="max-w-md truncate">
+                        {product.description || (
+                          <span className="text-base-content/50">
+                            Sin descripción
+                          </span>
+                        )}
+                      </td>
+                      <td>{formatPrice(product.originalPrice)}</td>
                       <td>
-                        <div
-                          className={`badge ${
-                            store.isActive ? 'badge-success' : 'badge-error'
-                          }`}
-                        >
-                          {store.isActive ? 'Activa' : 'Inactiva'}
-                        </div>
+                        {product.category ? (
+                          <span className="badge badge-outline">
+                            {product.category}
+                          </span>
+                        ) : (
+                          <span className="text-base-content/50">
+                            Sin categoría
+                          </span>
+                        )}
                       </td>
                       <td>
                         <div className="flex gap-2">
                           <Link
-                            href={`/stores/${store.id}/edit`}
+                            href={`/products/${product.id}`}
+                            className="btn btn-sm btn-ghost"
+                            title="Ver detalles"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              strokeLinejoin="round"
+                              strokeLinecap="round"
+                              strokeWidth="2"
+                              fill="none"
+                              stroke="currentColor"
+                              className="size-4"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          </Link>
+                          <Link
+                            href={`/products/${product.id}/edit`}
                             className="btn btn-sm btn-ghost"
                             title="Editar"
                           >
@@ -198,43 +222,17 @@ export default function StoresPage() {
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                           </Link>
-                          <button
-                            className="btn btn-sm btn-ghost text-error"
-                            onClick={() =>
-                              handleDeleteClick(store.id, store.name)
-                            }
-                            disabled={deletingId === store.id}
-                            title="Eliminar"
-                          >
-                            {deletingId === store.id ? (
-                              <span className="loading loading-spinner loading-sm"></span>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                strokeLinejoin="round"
-                                strokeLinecap="round"
-                                strokeWidth="2"
-                                fill="none"
-                                stroke="currentColor"
-                                className="size-4"
-                              >
-                                <path d="M3 6h18"></path>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              </svg>
-                            )}
-                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-8">
+                    <td colSpan={5} className="text-center py-8">
                       <p className="text-base-content/60">
                         {searchTerm
-                          ? 'No se encontraron tiendas que coincidan con el término de búsqueda'
-                          : 'No hay tiendas registradas'}
+                          ? 'No se encontraron productos que coincidan con el término de búsqueda'
+                          : 'No hay productos registrados'}
                       </p>
                     </td>
                   </tr>
@@ -256,31 +254,6 @@ export default function StoresPage() {
           />
         </>
       )}
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmModal
-        isOpen={deleteModal.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        title="Eliminar Tienda"
-        message={`¿Estás seguro de que deseas eliminar la tienda "${deleteModal.storeName}"? Esta acción no se puede deshacer.`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-        confirmVariant="error"
-        loading={deletingId !== null}
-      />
-
-      {/* Error Modal */}
-      <ConfirmModal
-        isOpen={errorModal.isOpen}
-        onClose={closeErrorModal}
-        onConfirm={closeErrorModal}
-        title="Error"
-        message={errorModal.message}
-        confirmText="Aceptar"
-        cancelText=""
-        confirmVariant="primary"
-      />
     </div>
   );
 }

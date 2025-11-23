@@ -51,9 +51,9 @@ export class StoreService {
     // Obtener total de registros
     const total = await queryBuilder.getCount();
 
-    // Aplicar paginación y ordenar por nombre
+    // Aplicar paginación y ordenar por fecha de creación (más recientes primero)
     const stores = await queryBuilder
-      .orderBy('store.name', 'ASC')
+      .orderBy('store.createdAt', 'DESC')
       .skip(skip)
       .take(limit)
       .getMany();

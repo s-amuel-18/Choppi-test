@@ -8,8 +8,8 @@ export type StoreFormData = CreateStoreInput;
 type FlexibleStoreFormData = CreateStoreInput | UpdateStoreInput;
 
 interface StoreFormFieldsProps {
-  register: UseFormRegister<FlexibleStoreFormData>;
-  errors: FieldErrors<FlexibleStoreFormData>;
+  register: UseFormRegister<CreateStoreInput> | UseFormRegister<UpdateStoreInput>;
+  errors: FieldErrors<CreateStoreInput> | FieldErrors<UpdateStoreInput>;
 }
 
 export default function StoreFormFields({ register, errors }: StoreFormFieldsProps) {
