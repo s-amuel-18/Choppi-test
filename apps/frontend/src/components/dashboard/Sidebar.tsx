@@ -36,7 +36,7 @@ const defaultItems: NavItem[] = [
   },
   {
     label: 'Stores',
-    href: '/dashboard/stores',
+    href: '/stores',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -115,4 +115,3 @@ export default function Sidebar({
     </div>
   );
 }
-

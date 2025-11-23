@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function StoresPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,24 +10,24 @@ export default function StoresPage() {
   const stores = [
     {
       id: 1,
-      name: 'Downtown Store',
-      address: 'Main St 123',
+      name: 'Tienda Centro',
+      address: 'Av. Principal 123',
       phone: '555-0101',
-      status: 'Active',
+      status: 'Activa',
     },
     {
       id: 2,
-      name: 'North Store',
-      address: 'North Ave 456',
+      name: 'Tienda Norte',
+      address: 'Calle Norte 456',
       phone: '555-0102',
-      status: 'Active',
+      status: 'Activa',
     },
     {
       id: 3,
-      name: 'South Store',
-      address: 'South Blvd 789',
+      name: 'Tienda Sur',
+      address: 'Av. Sur 789',
       phone: '555-0103',
-      status: 'Inactive',
+      status: 'Inactiva',
     },
   ];
 
@@ -38,17 +39,12 @@ export default function StoresPage() {
       store.phone.includes(searchTerm)
   );
 
-  const handleCreateStore = () => {
-    // TODO: Implement create store logic
-    console.log('Create new store');
-  };
-
   return (
     <div className="w-full">
       {/* Title and Create Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold">Stores</h1>
-        <button onClick={handleCreateStore} className="btn btn-primary">
+        <h1 className="text-3xl font-bold">Tiendas</h1>
+        <Link href="/stores/create" className="btn btn-primary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -62,8 +58,8 @@ export default function StoresPage() {
             <path d="M12 5v14"></path>
             <path d="M5 12h14"></path>
           </svg>
-          Create Store
-        </button>
+          Crear Tienda
+        </Link>
       </div>
 
       {/* Search */}
@@ -85,7 +81,7 @@ export default function StoresPage() {
           <input
             type="text"
             className="grow"
-            placeholder="Search by name, address or phone..."
+            placeholder="Buscar por nombre, dirección o teléfono..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -98,11 +94,11 @@ export default function StoresPage() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
-              <th>Address</th>
-              <th>Phone</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -116,7 +112,7 @@ export default function StoresPage() {
                   <td>
                     <div
                       className={`badge ${
-                        store.status === 'Active'
+                        store.status === 'Activa'
                           ? 'badge-success'
                           : 'badge-error'
                       }`}
@@ -126,7 +122,10 @@ export default function StoresPage() {
                   </td>
                   <td>
                     <div className="flex gap-2">
-                      <button className="btn btn-sm btn-ghost">
+                      <Link
+                        href={`/stores/${store.id}/edit`}
+                        className="btn btn-sm btn-ghost"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -140,7 +139,7 @@ export default function StoresPage() {
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
-                      </button>
+                      </Link>
                       <button className="btn btn-sm btn-ghost">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -164,7 +163,8 @@ export default function StoresPage() {
               <tr>
                 <td colSpan={6} className="text-center py-8">
                   <p className="text-base-content/60">
-                    No stores found matching the search term
+                    No se encontraron tiendas que coincidan con el término de
+                    búsqueda
                   </p>
                 </td>
               </tr>
