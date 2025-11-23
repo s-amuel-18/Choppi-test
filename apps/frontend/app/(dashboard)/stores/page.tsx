@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { storeService } from '@/src/services/store.service';
 import { Store, ApiError } from '@/src/types/store';
 import ConfirmModal from '@/src/components/ConfirmModal';
+import Pagination from '@/src/components/Pagination';
 
 interface PaginatedStores {
   data: Store[];
@@ -22,6 +23,7 @@ export default function StoresPage() {
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [pagination, setPagination] = useState<PaginatedStores>({
     data: [],
     total: 0,
@@ -48,14 +50,14 @@ export default function StoresPage() {
   });
 
   const loadStores = useCallback(
-    async (page: number = 1, search: string = '') => {
+    async (page: number = 1, search: string = '', limit: number = 10) => {
       setLoading(true);
       setError('');
 
       try {
         const result = await storeService.findAll({
           page,
-          limit: 10,
+          limit,
           q: search || undefined,
         });
         setStores(result.data);
@@ -72,21 +74,21 @@ export default function StoresPage() {
   );
 
   useEffect(() => {
-    loadStores(currentPage, searchTerm);
-  }, [currentPage, loadStores]);
+    loadStores(currentPage, searchTerm, itemsPerPage);
+  }, [currentPage, itemsPerPage, loadStores]);
 
   // Debounce para la búsqueda
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentPage === 1) {
-        loadStores(1, searchTerm);
+        loadStores(1, searchTerm, itemsPerPage);
       } else {
         setCurrentPage(1);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, loadStores, currentPage]);
+  }, [searchTerm, loadStores, currentPage, itemsPerPage]);
 
   const handleDeleteClick = (id: string, name: string) => {
     setDeleteModal({
@@ -105,7 +107,7 @@ export default function StoresPage() {
       // Cerrar el modal
       setDeleteModal({ isOpen: false, storeId: null, storeName: '' });
       // Recargar la lista
-      await loadStores(currentPage, searchTerm);
+      await loadStores(currentPage, searchTerm, itemsPerPage);
     } catch (err) {
       const apiError = err as ApiError;
       // Cerrar el modal de confirmación
@@ -127,6 +129,11 @@ export default function StoresPage() {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Resetear a la primera página
   };
 
   return (
@@ -305,62 +312,16 @@ export default function StoresPage() {
           </div>
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6">
-              <button
-                className="btn btn-sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || loading}
-              >
-                Anterior
-              </button>
-              <div className="flex gap-1">
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                  .filter((page) => {
-                    // Mostrar primera, última, actual y adyacentes
-                    return (
-                      page === 1 ||
-                      page === pagination.totalPages ||
-                      Math.abs(page - currentPage) <= 1
-                    );
-                  })
-                  .map((page, index, array) => {
-                    // Agregar puntos suspensivos si hay gap
-                    const showEllipsis =
-                      index > 0 && array[index - 1] !== page - 1;
-                    return (
-                      <div key={page} className="flex items-center gap-1">
-                        {showEllipsis && <span className="px-2">...</span>}
-                        <button
-                          className={`btn btn-sm ${
-                            currentPage === page ? 'btn-active' : ''
-                          }`}
-                          onClick={() => handlePageChange(page)}
-                          disabled={loading}
-                        >
-                          {page}
-                        </button>
-                      </div>
-                    );
-                  })}
-              </div>
-              <button
-                className="btn btn-sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === pagination.totalPages || loading}
-              >
-                Siguiente
-              </button>
-            </div>
-          )}
-
-          {/* Pagination Info */}
-          {pagination.total > 0 && (
-            <div className="text-center mt-4 text-sm text-base-content/60">
-              Mostrando {stores.length} de {pagination.total} tiendas
-              {searchTerm && ` (búsqueda: "${searchTerm}")`}
-            </div>
-          )}
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            loading={loading}
+            showItemsPerPage={true}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
         </>
       )}
 
