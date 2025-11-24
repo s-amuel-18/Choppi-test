@@ -35,7 +35,12 @@ interface UseProductsReturn {
   addProductModal: {
     isOpen: boolean;
   };
+  updateStoreProductModal: {
+    isOpen: boolean;
+    storeProductId: string | null;
+  };
   addingProduct: boolean;
+  updatingStoreProduct: boolean;
 
   // Acciones
   setSearchTerm: (term: string) => void;
@@ -50,6 +55,13 @@ interface UseProductsReturn {
   closeAddProductModal: () => void;
   handleAddProductToStore: (
     productId: string,
+    stock: number,
+    storePrice?: number | null
+  ) => Promise<void>;
+  openUpdateStoreProductModal: (storeProductId: string) => void;
+  closeUpdateStoreProductModal: () => void;
+  handleUpdateStoreProduct: (
+    storeProductId: string,
     stock: number,
     storePrice?: number | null
   ) => Promise<void>;
@@ -97,7 +109,15 @@ export function useProducts(
   }>({
     isOpen: false,
   });
+  const [updateStoreProductModal, setUpdateStoreProductModal] = useState<{
+    isOpen: boolean;
+    storeProductId: string | null;
+  }>({
+    isOpen: false,
+    storeProductId: null,
+  });
   const [addingProduct, setAddingProduct] = useState(false);
+  const [updatingStoreProduct, setUpdatingStoreProduct] = useState(false);
 
   const loadProducts = useCallback(
     async (
@@ -279,6 +299,60 @@ export function useProducts(
     [selectedStoreId, currentPage, searchTerm, itemsPerPage, loadProducts]
   );
 
+  const openUpdateStoreProductModal = useCallback((storeProductId: string) => {
+    setUpdateStoreProductModal({
+      isOpen: true,
+      storeProductId,
+    });
+  }, []);
+
+  const closeUpdateStoreProductModal = useCallback(() => {
+    setUpdateStoreProductModal({ isOpen: false, storeProductId: null });
+  }, []);
+
+  const handleUpdateStoreProduct = useCallback(
+    async (
+      storeProductId: string,
+      stock: number,
+      storePrice?: number | null
+    ) => {
+      if (!selectedStoreId) return;
+
+      setUpdatingStoreProduct(true);
+      try {
+        await productService.updateStoreProduct(
+          selectedStoreId,
+          storeProductId,
+          {
+            stock,
+            storePrice: storePrice ?? null,
+          }
+        );
+        // Cerrar el modal
+        setUpdateStoreProductModal({ isOpen: false, storeProductId: null });
+        // Recargar la lista
+        await loadProducts(
+          currentPage,
+          searchTerm,
+          itemsPerPage,
+          selectedStoreId
+        );
+      } catch (err) {
+        const apiError = err as ApiError;
+        // Mostrar modal de error
+        setErrorModal({
+          isOpen: true,
+          message:
+            apiError.message || 'Error al actualizar el producto de la tienda',
+        });
+        throw err;
+      } finally {
+        setUpdatingStoreProduct(false);
+      }
+    },
+    [selectedStoreId, currentPage, searchTerm, itemsPerPage, loadProducts]
+  );
+
   const reload = useCallback(async () => {
     await loadProducts(currentPage, searchTerm, itemsPerPage, selectedStoreId);
   }, [currentPage, searchTerm, itemsPerPage, selectedStoreId, loadProducts]);
@@ -303,7 +377,9 @@ export function useProducts(
     deleteModal,
     errorModal,
     addProductModal,
+    updateStoreProductModal,
     addingProduct,
+    updatingStoreProduct,
 
     // Acciones
     setSearchTerm,
@@ -317,6 +393,9 @@ export function useProducts(
     openAddProductModal,
     closeAddProductModal,
     handleAddProductToStore,
+    openUpdateStoreProductModal,
+    closeUpdateStoreProductModal,
+    handleUpdateStoreProduct,
     closeErrorModal,
     reload,
   };

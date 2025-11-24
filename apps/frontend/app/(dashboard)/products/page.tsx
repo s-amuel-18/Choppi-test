@@ -5,6 +5,7 @@ import { useProducts } from '@/src/hooks/useProducts';
 import { useStoreList } from '@/src/hooks/useStoreList';
 import ConfirmModal from '@/src/components/ConfirmModal';
 import AddProductToStoreModal from '@/src/components/modals/AddProductToStoreModal';
+import UpdateStoreProductModal from '@/src/components/modals/UpdateStoreProductModal';
 import Pagination from '@/src/components/Pagination';
 
 export default function ProductsPage() {
@@ -31,9 +32,14 @@ export default function ProductsPage() {
     openAddProductModal,
     closeAddProductModal,
     handleAddProductToStore,
+    openUpdateStoreProductModal,
+    closeUpdateStoreProductModal,
+    handleUpdateStoreProduct,
     closeErrorModal,
     addProductModal,
+    updateStoreProductModal,
     addingProduct,
+    updatingStoreProduct,
   } = useProducts(5);
 
   const { stores, loading: storesLoading } = useStoreList();
@@ -293,7 +299,7 @@ export default function ProductsPage() {
                             <Link
                               href={`/products/${product.id}/edit`}
                               className="btn btn-sm btn-ghost"
-                              title="Editar"
+                              title="Editar producto"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -309,6 +315,49 @@ export default function ProductsPage() {
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                               </svg>
                             </Link>
+                            {selectedStoreId && storeProduct && (
+                              <button
+                                onClick={() =>
+                                  openUpdateStoreProductModal(storeProduct.id)
+                                }
+                                className="btn btn-sm btn-ghost"
+                                title="Actualizar stock y precio en tienda"
+                                disabled={updatingStoreProduct}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  strokeLinejoin="round"
+                                  strokeLinecap="round"
+                                  strokeWidth="2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  className="size-4"
+                                >
+                                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                              </button>
+                            )}
+                            {selectedStoreId && !storeProduct && (
+                              <button
+                                className="btn btn-sm btn-ghost"
+                                title="Actualizar stock y precio en tienda (selecciona un producto vinculado)"
+                                disabled={true}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  strokeLinejoin="round"
+                                  strokeLinecap="round"
+                                  strokeWidth="2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  className="size-4 opacity-50"
+                                >
+                                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                              </button>
+                            )}
                             <button
                               onClick={() =>
                                 handleDeleteClick(product.id, product.name)
@@ -407,6 +456,29 @@ export default function ProductsPage() {
         storeId={selectedStoreId}
         existingProductIds={
           selectedStoreId ? storeProducts.map((sp) => sp.productId) : []
+        }
+      />
+
+      {/* Update Store Product Modal */}
+      <UpdateStoreProductModal
+        isOpen={updateStoreProductModal.isOpen}
+        onClose={closeUpdateStoreProductModal}
+        onSubmit={async (stock, storePrice) => {
+          if (updateStoreProductModal.storeProductId) {
+            await handleUpdateStoreProduct(
+              updateStoreProductModal.storeProductId,
+              stock,
+              storePrice
+            );
+          }
+        }}
+        loading={updatingStoreProduct}
+        storeProduct={
+          selectedStoreId && updateStoreProductModal.storeProductId
+            ? storeProducts.find(
+                (sp) => sp.id === updateStoreProductModal.storeProductId
+              ) || null
+            : null
         }
       />
     </div>
