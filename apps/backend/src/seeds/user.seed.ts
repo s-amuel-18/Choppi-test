@@ -6,7 +6,7 @@ const usersSeed: Array<{ email: string; name: string; password: string }> = [
   {
     email: 'test@test.com',
     name: 'Test User',
-    password: '0424Sam??',
+    password: '1234Pepe**',
   },
 ];
 

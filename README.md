@@ -113,6 +113,17 @@ Esto iniciará tanto el backend (puerto 3001) como el frontend (puerto 3000) en 
 - Backend API: http://localhost:3001
 - Documentación Swagger: http://localhost:3001/api
 
+## 🔑 Credenciales Demo
+
+Después de ejecutar los seeds, puedes usar las siguientes credenciales para iniciar sesión:
+
+**Usuario Demo:**
+
+- **Email:** `test@test.com`
+- **Contraseña:** `1234Pepe**`
+
+Estas credenciales se crean automáticamente al ejecutar `npm run seed` en el backend.
+
 ## 🏗️ Arquitectura del Proyecto
 
 ### Estructura del Monorepo

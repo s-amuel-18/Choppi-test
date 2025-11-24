@@ -44,7 +44,6 @@ export default function LoginPage() {
         );
       } else if (result?.ok) {
         router.push('/dashboard');
-        
       }
     } catch (err) {
       setError('Error al iniciar sesión. Por favor, intenta nuevamente.');
@@ -80,7 +79,7 @@ export default function LoginPage() {
           label="Contraseña"
           placeholder="********"
           error={errors.password?.message}
-          value={'0424Sam??'}
+          value={'1234Pepe**'}
           containerClassName="mb-6"
           {...registerField('password')}
         />
