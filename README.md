@@ -15,7 +15,7 @@ Para ejecutar este proyecto necesitas tener instalado:
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/s-amuel-18/Choppi-test.git
 cd choppi-test
 ```
 
