@@ -180,16 +180,18 @@ export class ProductsService {
       productId: createStoreProductDto.productId,
       stock: createStoreProductDto.stock,
       storePrice: createStoreProductDto.storePrice ?? null,
+      store,
+      product,
     });
 
     const savedStoreProduct =
       await this.storeProductRepository.save(storeProduct);
 
-    // Cargar la relación con el producto
-    return await this.storeProductRepository.findOne({
-      where: { id: savedStoreProduct.id },
-      relations: ['product'],
-    });
+    // Garantizamos que las relaciones estén disponibles sin requerir otra consulta
+    savedStoreProduct.store = store;
+    savedStoreProduct.product = product;
+
+    return savedStoreProduct;
   }
 
   /**

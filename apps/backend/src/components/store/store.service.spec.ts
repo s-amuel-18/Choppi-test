@@ -20,6 +20,7 @@ describe('StoreService', () => {
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
+    storeProducts: [],
   };
 
   beforeEach(async () => {
