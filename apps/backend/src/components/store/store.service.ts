@@ -7,14 +7,19 @@ import { PaginatedStoreResponseDto } from './dto/paginated-store-response.dto';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoreProduct } from '../products/store-product.entity';
+import { Product } from '../products/product.entity';
+import { StoreDashboardSummaryDto } from './dto/store-dashboard-summary.dto';
+import { TopStoreResponseDto } from './dto/top-store-response.dto';
 
 @Injectable()
 export class StoreService {
   constructor(
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
-    // @InjectRepository(StoreProduct)
-    // private readonly storeProductRepository: Repository<StoreProduct>,
+    @InjectRepository(StoreProduct)
+    private readonly storeProductRepository: Repository<StoreProduct>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   /**
@@ -117,7 +122,69 @@ export class StoreService {
    */
   async remove(id: string): Promise<void> {
     const store = await this.findOne(id);
-    // await this.storeProductRepository.delete({ storeId: id });
+    await this.storeProductRepository.delete({ storeId: id });
     await this.storeRepository.remove(store);
+  }
+
+  /**
+   * Obtiene métricas agregadas para el dashboard de tiendas/productos
+   */
+  async getDashboardSummary(): Promise<StoreDashboardSummaryDto> {
+    const [totalProducts, totalStores, inactiveStores, outOfStockProducts] =
+      await Promise.all([
+        this.productRepository.count(),
+        this.storeRepository.count(),
+        this.storeRepository.count({ where: { isActive: false } }),
+        this.storeProductRepository.count({ where: { stock: 0 } }),
+      ]);
+
+    return {
+      totalProducts,
+      totalStores,
+      inactiveStores,
+      outOfStockProducts,
+    };
+  }
+
+  /**
+   * Obtiene las últimas tiendas con métricas de inventario
+   */
+  async getTopStores(limit: number = 4): Promise<TopStoreResponseDto[]> {
+    const normalizedLimit = this.normalizeLimit(limit, 10, 4);
+
+    const stores = await this.storeRepository.find({
+      order: { createdAt: 'DESC' },
+      take: normalizedLimit,
+      relations: ['storeProducts'],
+    });
+
+    return stores.map((store) => {
+      const storeProducts = store.storeProducts ?? [];
+      const totalInventory = storeProducts.reduce(
+        (sum, storeProduct) => sum + (storeProduct.stock ?? 0),
+        0,
+      );
+
+      return {
+        id: store.id,
+        name: store.name,
+        isActive: store.isActive,
+        totalProducts: storeProducts.length,
+        totalInventory,
+        createdAt: store.createdAt,
+      };
+    });
+  }
+
+  private normalizeLimit(
+    value: number,
+    max: number,
+    fallback: number,
+  ): number {
+    if (Number.isNaN(value) || value <= 0) {
+      return fallback;
+    }
+
+    return Math.min(value, max);
   }
 }

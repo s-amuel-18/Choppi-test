@@ -6,11 +6,13 @@ import { StoreService } from './store.service';
 import { Store } from './store.entity';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { StoreProduct } from '../products/store-product.entity';
+import { Product } from '../products/product.entity';
 
 describe('StoreService', () => {
   let service: StoreService;
   let storeRepository: jest.Mocked<Repository<Store>>;
   let storeProductRepository: jest.Mocked<Repository<StoreProduct>>;
+  let productRepository: jest.Mocked<Repository<Product>>;
 
   const mockStore: Store = {
     id: '123e4567-e89b-12d3-a456-426614174000',
@@ -28,14 +30,21 @@ describe('StoreService', () => {
   beforeEach(async () => {
     const mockStoreRepository = {
       findOne: jest.fn(),
+      find: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
       createQueryBuilder: jest.fn(),
       remove: jest.fn(),
+      count: jest.fn(),
     };
 
     const mockStoreProductRepo = {
       delete: jest.fn(),
+      count: jest.fn(),
+    };
+
+    const mockProductRepo = {
+      count: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -49,12 +58,17 @@ describe('StoreService', () => {
           provide: getRepositoryToken(StoreProduct),
           useValue: mockStoreProductRepo,
         },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: mockProductRepo,
+        },
       ],
     }).compile();
 
     service = module.get<StoreService>(StoreService);
     storeRepository = module.get(getRepositoryToken(Store));
     storeProductRepository = module.get(getRepositoryToken(StoreProduct));
+    productRepository = module.get(getRepositoryToken(Product));
   });
 
   afterEach(() => {
@@ -190,6 +204,91 @@ describe('StoreService', () => {
         });
         expect(storeRepository.remove).toHaveBeenCalledWith(mockStore);
       });
+    });
+  });
+
+  describe('getDashboardSummary', () => {
+    it('debería retornar los conteos agregados', async () => {
+      productRepository.count.mockResolvedValue(15);
+      storeRepository.count.mockResolvedValueOnce(5);
+      storeRepository.count.mockResolvedValueOnce(2);
+      storeProductRepository.count.mockResolvedValue(3);
+
+      const summary = await service.getDashboardSummary();
+
+      expect(summary).toEqual({
+        totalProducts: 15,
+        totalStores: 5,
+        inactiveStores: 2,
+        outOfStockProducts: 3,
+      });
+      expect(productRepository.count).toHaveBeenCalledTimes(1);
+      expect(storeRepository.count).toHaveBeenCalledTimes(2);
+      expect(storeProductRepository.count).toHaveBeenCalledWith({
+        where: { stock: 0 },
+      });
+    });
+  });
+
+  describe('getTopStores', () => {
+    it('debería retornar las tiendas con métricas derivadas', async () => {
+      const stores: Store[] = [
+        {
+          ...mockStore,
+          id: 'store-1',
+          name: 'Tienda A',
+          storeProducts: [
+            { stock: 5 } as StoreProduct,
+            { stock: 10 } as StoreProduct,
+          ],
+        },
+        {
+          ...mockStore,
+          id: 'store-2',
+          name: 'Tienda B',
+          storeProducts: [],
+        },
+      ];
+
+      storeRepository.find.mockResolvedValue(stores);
+
+      const result = await service.getTopStores(4);
+
+      expect(storeRepository.find).toHaveBeenCalledWith({
+        order: { createdAt: 'DESC' },
+        take: 4,
+        relations: ['storeProducts'],
+      });
+      expect(result).toEqual([
+        {
+          id: 'store-1',
+          name: 'Tienda A',
+          isActive: true,
+          totalProducts: 2,
+          totalInventory: 15,
+          createdAt: stores[0].createdAt,
+        },
+        {
+          id: 'store-2',
+          name: 'Tienda B',
+          isActive: true,
+          totalProducts: 0,
+          totalInventory: 0,
+          createdAt: stores[1].createdAt,
+        },
+      ]);
+    });
+
+    it('debería limitar el número máximo de resultados', async () => {
+      storeRepository.find.mockResolvedValue([]);
+
+      await service.getTopStores(100);
+
+      expect(storeRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 10,
+        }),
+      );
     });
   });
 });

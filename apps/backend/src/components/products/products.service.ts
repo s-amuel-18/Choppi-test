@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, LessThanOrEqual } from 'typeorm';
 import { Product } from './product.entity';
 import { StoreProduct } from './store-product.entity';
 import { Store } from '../store/store.entity';
@@ -16,6 +16,7 @@ import { UpdateStoreProductDto } from './dto/update-store-product.dto';
 import { GetStoreProductsQueryDto } from './dto/get-store-products-query.dto';
 import { GetProductsQueryDto } from './dto/get-products-query.dto';
 import { PaginatedStoreProductResponseDto } from './dto/paginated-store-product-response.dto';
+import { OutOfStockProductResponseDto } from './dto/out-of-stock-product-response.dto';
 
 @Injectable()
 export class ProductsService {
@@ -255,6 +256,37 @@ export class ProductsService {
   }
 
   /**
+   * Obtiene los productos sin inventario más recientes
+   */
+  async getProductsWithoutInventory(
+    limit: number = 5,
+  ): Promise<OutOfStockProductResponseDto[]> {
+    const normalizedLimit = this.normalizeLimit(limit, 20, 5);
+
+    const storeProducts = await this.storeProductRepository.find({
+      where: { stock: LessThanOrEqual(0) },
+      relations: ['store', 'product'],
+      order: { updatedAt: 'DESC' },
+      take: normalizedLimit,
+    });
+
+    return storeProducts.map((storeProduct) => ({
+      id: storeProduct.id,
+      stock: storeProduct.stock,
+      updatedAt: storeProduct.updatedAt,
+      product: {
+        id: storeProduct.product?.id ?? storeProduct.productId,
+        name: storeProduct.product?.name ?? 'Producto sin nombre',
+        category: storeProduct.product?.category ?? null,
+      },
+      store: {
+        id: storeProduct.store?.id ?? storeProduct.storeId,
+        name: storeProduct.store?.name ?? 'Tienda desconocida',
+      },
+    }));
+  }
+
+  /**
    * Actualiza un producto de tienda
    */
   async updateStoreProduct(
@@ -345,5 +377,17 @@ export class ProductsService {
 
     // Eliminar el producto
     await this.productRepository.remove(product);
+  }
+
+  private normalizeLimit(
+    value: number,
+    max: number,
+    fallback: number,
+  ): number {
+    if (Number.isNaN(value) || value <= 0) {
+      return fallback;
+    }
+
+    return Math.min(value, max);
   }
 }

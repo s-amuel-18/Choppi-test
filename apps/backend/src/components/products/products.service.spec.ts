@@ -65,6 +65,7 @@ describe('ProductsService', () => {
 
     const mockStoreProductRepo = {
       findOne: jest.fn(),
+      find: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
       remove: jest.fn(),
@@ -395,6 +396,55 @@ describe('ProductsService', () => {
       await expect(
         service.removeProductFromStore('store-id-1', 'non-existent-product'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('getProductsWithoutInventory', () => {
+    it('debería retornar productos sin stock ordenados', async () => {
+      const zeroStockProduct: StoreProduct = {
+        ...mockStoreProduct,
+        id: 'sp-1',
+        stock: 0,
+        updatedAt: new Date('2024-03-01T00:00:00Z'),
+      };
+      storeProductRepository.find.mockResolvedValue([zeroStockProduct]);
+
+      const result = await service.getProductsWithoutInventory(5);
+
+      expect(storeProductRepository.find).toHaveBeenCalledWith({
+        where: { stock: expect.any(Object) },
+        relations: ['store', 'product'],
+        order: { updatedAt: 'DESC' },
+        take: 5,
+      });
+      expect(result).toEqual([
+        {
+          id: 'sp-1',
+          stock: 0,
+          updatedAt: zeroStockProduct.updatedAt,
+          product: {
+            id: mockProduct.id,
+            name: mockProduct.name,
+            category: mockProduct.category,
+          },
+          store: {
+            id: mockStore.id,
+            name: mockStore.name,
+          },
+        },
+      ]);
+    });
+
+    it('debería limitar los resultados al máximo permitido', async () => {
+      storeProductRepository.find.mockResolvedValue([]);
+
+      await service.getProductsWithoutInventory(100);
+
+      expect(storeProductRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 20,
+        }),
+      );
     });
   });
 

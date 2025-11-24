@@ -11,7 +11,14 @@ import { StoreModule } from './components/store/store.module';
 import { ProductsModule } from './components/products/products.module';
 
 @Module({
-  imports: [AppConfigModule, DatabaseModule, UserModule, AuthModule, StoreModule, ProductsModule],
+  imports: [
+    AppConfigModule,
+    DatabaseModule,
+    UserModule,
+    AuthModule,
+    StoreModule,
+    ProductsModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

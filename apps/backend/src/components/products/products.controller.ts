@@ -10,6 +10,8 @@ import {
   HttpStatus,
   ParseUUIDPipe,
   UseGuards,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,6 +38,7 @@ import { ProductResponseDto } from './dto/product-response.dto';
 import { StoreProductResponseDto } from './dto/store-product-response.dto';
 import { PaginatedProductResponseDto } from './dto/paginated-product-response.dto';
 import { PaginatedStoreProductResponseDto } from './dto/paginated-store-product-response.dto';
+import { OutOfStockProductResponseDto } from './dto/out-of-stock-product-response.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -76,6 +79,31 @@ export class ProductsController {
   })
   async findAll(@Query() queryDto: GetProductsQueryDto) {
     return await this.productsService.findAll(queryDto);
+  }
+
+  @Get('out-of-stock')
+  @ApiOperation({
+    summary: 'Listar productos sin inventario',
+    description:
+      'Devuelve los registros de producto-tienda cuyo stock es cero, ordenados por actualización reciente.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de registros (máximo 20)',
+    example: 5,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OutOfStockProductResponseDto,
+    isArray: true,
+    description: 'Lista de productos sin inventario obtenida exitosamente',
+  })
+  async getProductsWithoutInventory(
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+  ) {
+    return await this.productsService.getProductsWithoutInventory(limit);
   }
 
   @Get(':id')

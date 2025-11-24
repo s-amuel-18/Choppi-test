@@ -11,6 +11,8 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Request,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,11 +32,52 @@ import { PaginatedStoreResponseDto } from './dto/paginated-store-response.dto';
 import { StoreResponseDto } from './dto/store-response.dto';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { StoreDashboardSummaryDto } from './dto/store-dashboard-summary.dto';
+import { TopStoreResponseDto } from './dto/top-store-response.dto';
 
 @ApiTags('stores')
 @Controller('stores')
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
+
+  @Get('summary')
+  @ApiOperation({
+    summary: 'Obtener resumen de tiendas y productos',
+    description: 'Devuelve métricas globales para poblar el dashboard.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: StoreDashboardSummaryDto,
+    description: 'Resumen obtenido correctamente',
+  })
+  async getDashboardSummary() {
+    return await this.storeService.getDashboardSummary();
+  }
+
+  @Get('top')
+  @ApiOperation({
+    summary: 'Obtener últimas tiendas con métricas',
+    description:
+      'Devuelve las últimas tiendas creadas con la cantidad de productos e inventario total.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de tiendas (máximo 10)',
+    example: 4,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: TopStoreResponseDto,
+    isArray: true,
+    description: 'Listado obtenido correctamente',
+  })
+  async getTopStores(
+    @Query('limit', new DefaultValuePipe(4), ParseIntPipe) limit: number,
+  ) {
+    return await this.storeService.getTopStores(limit);
+  }
 
   @Get()
   @ApiOperation({
