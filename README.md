@@ -108,6 +108,7 @@ npm run dev
 Esto iniciará tanto el backend (puerto 3001) como el frontend (puerto 3000) en modo desarrollo.
 
 **URLs importantes:**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - Documentación Swagger: http://localhost:3001/api
@@ -136,6 +137,7 @@ El backend está organizado en módulos por funcionalidad:
 - **Products**: Gestión de productos y relación con tiendas (store-products)
 
 **Características principales:**
+
 - TypeORM para el manejo de base de datos
 - Migraciones para el esquema de base de datos
 - Validación de datos con class-validator
@@ -154,6 +156,7 @@ El frontend utiliza:
 - **Axios** para peticiones HTTP
 
 **Estructura:**
+
 - Rutas públicas: login y registro
 - Rutas protegidas: dashboard, productos y tiendas
 - Hooks personalizados para manejo de estado
@@ -168,12 +171,14 @@ El proyecto incluye tests end-to-end (e2e) para el backend:
 Primero, asegúrate de que la base de datos de test esté corriendo:
 
 **En Linux/Mac:**
+
 ```bash
 cd apps/backend
 ./scripts/setup-test-db.sh
 ```
 
 **En Windows:**
+
 ```powershell
 cd apps/backend
 .\scripts\setup-test-db.ps1
@@ -187,6 +192,7 @@ npm run test:e2e
 ```
 
 Los tests cubren:
+
 - Autenticación (login, registro)
 - Gestión de tiendas (CRUD completo)
 - Gestión de productos (CRUD y relación con tiendas)
@@ -234,4 +240,3 @@ Una vez que el backend esté corriendo, puedes acceder a la documentación inter
 http://localhost:3001/api
 
 Ahí encontrarás todos los endpoints disponibles, sus parámetros y podrás probarlos directamente desde el navegador.
-

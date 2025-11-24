@@ -180,6 +180,25 @@ export default function StoresPage() {
                       <td>
                         <div className="flex gap-2">
                           <Link
+                            href={`/stores/${store.id}`}
+                            className="btn btn-sm btn-ghost"
+                            title="Ver detalle"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              strokeLinejoin="round"
+                              strokeLinecap="round"
+                              strokeWidth="2"
+                              fill="none"
+                              stroke="currentColor"
+                              className="size-4"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          </Link>
+                          <Link
                             href={`/stores/${store.id}/edit`}
                             className="btn btn-sm btn-ghost"
                             title="Editar"

@@ -4,14 +4,10 @@ import { seedProducts } from './product.seed';
 import { seedStoreProducts } from './store-product.seed';
 import { seedUsers } from './user.seed';
 
-
-
-
 export async function runSeeds(dataSource: DataSource): Promise<void> {
   console.log('🚀 Iniciando proceso de seeds...\n');
 
   try {
-    
     await seedUsers(dataSource);
     console.log('');
 

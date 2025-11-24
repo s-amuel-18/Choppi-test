@@ -8,9 +8,6 @@ import {
 } from '@/src/types/product';
 
 class ProductService {
-  
-
-
   async create(data: CreateProductRequest): Promise<Product> {
     try {
       const response = await apiClient.post<ApiResponse<Product>>(
@@ -27,9 +24,6 @@ class ProductService {
       throw this.handleError(error);
     }
   }
-
-  
-
 
   async findAll(params?: {
     page?: number;
@@ -63,9 +57,6 @@ class ProductService {
     }
   }
 
-  
-
-
   async findOne(id: string): Promise<Product> {
     try {
       const response = await apiClient.get<ApiResponse<Product>>(
@@ -81,9 +72,6 @@ class ProductService {
       throw this.handleError(error);
     }
   }
-
-  
-
 
   async update(
     id: string,
@@ -105,9 +93,6 @@ class ProductService {
     }
   }
 
-  
-
-
   async remove(id: string): Promise<void> {
     try {
       await apiClient.delete(`/products/${id}`);
@@ -115,9 +100,6 @@ class ProductService {
       throw this.handleError(error);
     }
   }
-
-  
-
 
   async findStoreProducts(
     storeId: string,
@@ -168,7 +150,6 @@ class ProductService {
       >(`/stores/${storeId}/products`, { params });
 
       if (response.data.success && response.data.data) {
-        
         return response.data.data;
       }
 
@@ -177,9 +158,6 @@ class ProductService {
       throw this.handleError(error);
     }
   }
-
-  
-
 
   async addProductToStore(
     storeId: string,
@@ -222,9 +200,6 @@ class ProductService {
     }
   }
 
-  
-
-
   async updateStoreProduct(
     storeId: string,
     storeProductId: string,
@@ -266,8 +241,45 @@ class ProductService {
     }
   }
 
-  
+  async getProductStores(productId: string): Promise<
+    Array<{
+      id: string;
+      storeId: string;
+      storeName: string;
+      storeAddress: string;
+      storeEmail: string;
+      stock: number;
+      storePrice: number | null;
+      createdAt: string;
+      updatedAt: string;
+    }>
+  > {
+    try {
+      const response = await apiClient.get<
+        ApiResponse<
+          Array<{
+            id: string;
+            storeId: string;
+            storeName: string;
+            storeAddress: string;
+            storeEmail: string;
+            stock: number;
+            storePrice: number | null;
+            createdAt: string;
+            updatedAt: string;
+          }>
+        >
+      >(`/products/${productId}/stores`);
 
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error('Respuesta inválida del servidor');
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
 
   private handleError(error: unknown): ApiError {
     if (error instanceof AxiosError) {

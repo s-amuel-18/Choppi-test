@@ -44,7 +44,6 @@ export default function ProductsPage() {
 
   const { stores, loading: storesLoading } = useStoreList();
 
-  
   const displayProducts = selectedStoreId
     ? storeProducts.map((sp) => sp.product)
     : products;
@@ -296,6 +295,25 @@ export default function ProductsPage() {
                         </td>
                         <td>
                           <div className="flex gap-2">
+                            <Link
+                              href={`/products/${product.id}`}
+                              className="btn btn-sm btn-ghost"
+                              title="Ver detalle del producto"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                strokeWidth="2"
+                                fill="none"
+                                stroke="currentColor"
+                                className="size-4"
+                              >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                              </svg>
+                            </Link>
                             <Link
                               href={`/products/${product.id}/edit`}
                               className="btn btn-sm btn-ghost"

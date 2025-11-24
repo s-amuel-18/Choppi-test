@@ -29,9 +29,6 @@ export class ProductsService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  
-
-
   private normalizeText(text: string): string {
     return text
       .toLowerCase()
@@ -55,7 +52,6 @@ export class ProductsService {
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
-    
     if (q) {
       queryBuilder.where(
         `(product.name ILIKE :search OR product.description ILIKE :search)`,
@@ -63,10 +59,8 @@ export class ProductsService {
       );
     }
 
-    
     const total = await queryBuilder.getCount();
 
-    
     const products = await queryBuilder
       .orderBy('product.createdAt', 'DESC')
       .skip(skip)
@@ -84,9 +78,6 @@ export class ProductsService {
     };
   }
 
-  
-
-
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
@@ -99,16 +90,10 @@ export class ProductsService {
     return product;
   }
 
-  
-
-
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const product = this.productRepository.create(createProductDto);
     return await this.productRepository.save(product);
   }
-
-  
-
 
   async update(
     id: string,
@@ -116,7 +101,6 @@ export class ProductsService {
   ): Promise<Product> {
     const product = await this.findOne(id);
 
-    
     if (updateProductDto.name !== undefined) {
       product.name = updateProductDto.name;
     }
@@ -136,14 +120,10 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  
-
-
   async addProductToStore(
     storeId: string,
     createStoreProductDto: CreateStoreProductDto,
   ): Promise<StoreProduct> {
-    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -152,7 +132,6 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    
     const product = await this.productRepository.findOne({
       where: { id: createStoreProductDto.productId },
     });
@@ -163,7 +142,6 @@ export class ProductsService {
       );
     }
 
-    
     const existingStoreProduct = await this.storeProductRepository.findOne({
       where: {
         storeId,
@@ -175,7 +153,6 @@ export class ProductsService {
       throw new ConflictException('El producto ya está asociado a esta tienda');
     }
 
-    
     const storeProduct = this.storeProductRepository.create({
       storeId,
       productId: createStoreProductDto.productId,
@@ -188,21 +165,16 @@ export class ProductsService {
     const savedStoreProduct =
       await this.storeProductRepository.save(storeProduct);
 
-    
     savedStoreProduct.store = store;
     savedStoreProduct.product = product;
 
     return savedStoreProduct;
   }
 
-  
-
-
   async getStoreProducts(
     storeId: string,
     queryDto: GetStoreProductsQueryDto,
   ): Promise<PaginatedStoreProductResponseDto> {
-    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -219,7 +191,6 @@ export class ProductsService {
       .leftJoinAndSelect('storeProduct.product', 'product')
       .where('storeProduct.storeId = :storeId', { storeId });
 
-    
     if (q) {
       queryBuilder.andWhere(
         `(product.name ILIKE :search OR product.description ILIKE :search)`,
@@ -227,15 +198,12 @@ export class ProductsService {
       );
     }
 
-    
     if (inStock === true) {
       queryBuilder.andWhere('storeProduct.stock > 0');
     }
 
-    
     const total = await queryBuilder.getCount();
 
-    
     const storeProducts = await queryBuilder
       .orderBy('product.createdAt', 'DESC')
       .skip(skip)
@@ -254,9 +222,6 @@ export class ProductsService {
       },
     };
   }
-
-  
-
 
   async getProductsWithoutInventory(
     limit: number = 5,
@@ -286,15 +251,11 @@ export class ProductsService {
     }));
   }
 
-  
-
-
   async updateStoreProduct(
     storeId: string,
     storeProductId: string,
     updateStoreProductDto: UpdateStoreProductDto,
   ): Promise<StoreProduct> {
-    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -303,7 +264,6 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    
     const storeProduct = await this.storeProductRepository.findOne({
       where: {
         id: storeProductId,
@@ -318,7 +278,6 @@ export class ProductsService {
       );
     }
 
-    
     if (updateStoreProductDto.stock !== undefined) {
       storeProduct.stock = updateStoreProductDto.stock;
     }
@@ -330,14 +289,10 @@ export class ProductsService {
     return await this.storeProductRepository.save(storeProduct);
   }
 
-  
-
-
   async removeProductFromStore(
     storeId: string,
     storeProductId: string,
   ): Promise<void> {
-    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -346,7 +301,6 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    
     const storeProduct = await this.storeProductRepository.findOne({
       where: {
         id: storeProductId,
@@ -363,27 +317,51 @@ export class ProductsService {
     await this.storeProductRepository.remove(storeProduct);
   }
 
-  
-
-
-
   async remove(id: string): Promise<void> {
     const product = await this.findOne(id);
 
-    
     await this.storeProductRepository.delete({
       productId: id,
     });
 
-    
     await this.productRepository.remove(product);
   }
 
-  private normalizeLimit(
-    value: number,
-    max: number,
-    fallback: number,
-  ): number {
+  async getProductStores(productId: string): Promise<
+    Array<{
+      id: string;
+      storeId: string;
+      storeName: string;
+      storeAddress: string;
+      storeEmail: string;
+      stock: number;
+      storePrice: number | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }>
+  > {
+    const product = await this.findOne(productId);
+
+    const storeProducts = await this.storeProductRepository.find({
+      where: { productId },
+      relations: ['store'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return storeProducts.map((sp) => ({
+      id: sp.id,
+      storeId: sp.storeId,
+      storeName: sp.store?.name || 'Tienda desconocida',
+      storeAddress: sp.store?.address || '',
+      storeEmail: sp.store?.email || '',
+      stock: sp.stock,
+      storePrice: sp.storePrice,
+      createdAt: sp.createdAt,
+      updatedAt: sp.updatedAt,
+    }));
+  }
+
+  private normalizeLimit(value: number, max: number, fallback: number): number {
     if (Number.isNaN(value) || value <= 0) {
       return fallback;
     }

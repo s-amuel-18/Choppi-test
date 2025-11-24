@@ -36,4 +36,3 @@ export async function seedUsers(dataSource: DataSource): Promise<void> {
     console.log(`✅ Usuario ${seedUser.email} creado.`);
   }
 }
-

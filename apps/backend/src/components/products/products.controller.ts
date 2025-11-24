@@ -148,6 +148,83 @@ export class ProductsController {
     return await this.productsService.findOne(id);
   }
 
+  @Get(':id/stores')
+  @ApiOperation({
+    summary: 'Obtener tiendas donde está disponible un producto',
+    description:
+      'Obtiene la lista de tiendas donde está disponible un producto, incluyendo stock y precio por tienda.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del producto (UUID)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de tiendas obtenida exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: true,
+        },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                example: '123e4567-e89b-12d3-a456-426614174000',
+              },
+              storeId: {
+                type: 'string',
+                example: '123e4567-e89b-12d3-a456-426614174000',
+              },
+              storeName: {
+                type: 'string',
+                example: 'Tienda Central',
+              },
+              storeAddress: {
+                type: 'string',
+                example: 'Av. Principal 123',
+              },
+              storeEmail: {
+                type: 'string',
+                example: 'central@tienda.com',
+              },
+              stock: {
+                type: 'number',
+                example: 50,
+              },
+              storePrice: {
+                type: 'number',
+                nullable: true,
+                example: 1199.99,
+              },
+              createdAt: {
+                type: 'string',
+                example: '2024-01-01T00:00:00.000Z',
+              },
+              updatedAt: {
+                type: 'string',
+                example: '2024-01-01T00:00:00.000Z',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: 'Producto no encontrado',
+  })
+  async getProductStores(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.productsService.getProductStores(id);
+  }
+
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
