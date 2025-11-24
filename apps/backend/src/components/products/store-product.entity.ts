@@ -43,7 +43,9 @@ export class StoreProduct {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Store, (store) => store.storeProducts)
+  @ManyToOne(() => Store, (store) => store.storeProducts, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'storeId' })
   store: Store;
 

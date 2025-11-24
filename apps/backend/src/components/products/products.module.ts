@@ -5,7 +5,10 @@ import { Product } from './product.entity';
 import { StoreProduct } from './store-product.entity';
 import { Store } from '../store/store.entity';
 import { ProductsService } from './products.service';
-import { ProductsController, StoreProductsController } from './products.controller';
+import {
+  ProductsController,
+  StoreProductsController,
+} from './products.controller';
 
 @Module({
   imports: [
@@ -17,4 +20,3 @@ import { ProductsController, StoreProductsController } from './products.controll
   exports: [ProductsService],
 })
 export class ProductsModule {}
-

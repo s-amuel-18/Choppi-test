@@ -1,17 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Store } from './store.entity';
 import { GetStoresQueryDto } from './dto/get-stores-query.dto';
 import { PaginatedStoreResponseDto } from './dto/paginated-store-response.dto';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { StoreProduct } from '../products/store-product.entity';
 
 @Injectable()
 export class StoreService {
   constructor(
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
+    // @InjectRepository(StoreProduct)
+    // private readonly storeProductRepository: Repository<StoreProduct>,
   ) {}
 
   /**
@@ -114,6 +117,7 @@ export class StoreService {
    */
   async remove(id: string): Promise<void> {
     const store = await this.findOne(id);
+    // await this.storeProductRepository.delete({ storeId: id });
     await this.storeRepository.remove(store);
   }
 }

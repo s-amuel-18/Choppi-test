@@ -5,10 +5,12 @@ import { Repository } from 'typeorm';
 import { StoreService } from './store.service';
 import { Store } from './store.entity';
 import { CreateStoreDto } from './dto/create-store.dto';
+import { StoreProduct } from '../products/store-product.entity';
 
 describe('StoreService', () => {
   let service: StoreService;
-  let repository: jest.Mocked<Repository<Store>>;
+  let storeRepository: jest.Mocked<Repository<Store>>;
+  let storeProductRepository: jest.Mocked<Repository<StoreProduct>>;
 
   const mockStore: Store = {
     id: '123e4567-e89b-12d3-a456-426614174000',
@@ -24,11 +26,16 @@ describe('StoreService', () => {
   };
 
   beforeEach(async () => {
-    const mockRepository = {
+    const mockStoreRepository = {
       findOne: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
       createQueryBuilder: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    const mockStoreProductRepo = {
+      delete: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -36,13 +43,18 @@ describe('StoreService', () => {
         StoreService,
         {
           provide: getRepositoryToken(Store),
-          useValue: mockRepository,
+          useValue: mockStoreRepository,
+        },
+        {
+          provide: getRepositoryToken(StoreProduct),
+          useValue: mockStoreProductRepo,
         },
       ],
     }).compile();
 
     service = module.get<StoreService>(StoreService);
-    repository = module.get(getRepositoryToken(Store));
+    storeRepository = module.get(getRepositoryToken(Store));
+    storeProductRepository = module.get(getRepositoryToken(StoreProduct));
   });
 
   afterEach(() => {
@@ -52,11 +64,11 @@ describe('StoreService', () => {
   describe('findOne', () => {
     it('debería retornar una tienda cuando existe', async () => {
       const storeId = '123e4567-e89b-12d3-a456-426614174000';
-      repository.findOne.mockResolvedValue(mockStore);
+      storeRepository.findOne.mockResolvedValue(mockStore);
 
       const result = await service.findOne(storeId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({
+      expect(storeRepository.findOne).toHaveBeenCalledWith({
         where: { id: storeId },
       });
       expect(result).toEqual(mockStore);
@@ -64,25 +76,25 @@ describe('StoreService', () => {
 
     it('debería lanzar NotFoundException cuando la tienda no existe', async () => {
       const storeId = '00000000-0000-0000-0000-000000000000';
-      repository.findOne.mockResolvedValue(null);
+      storeRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(storeId)).rejects.toThrow(NotFoundException);
       await expect(service.findOne(storeId)).rejects.toThrow(
         `Tienda con ID ${storeId} no encontrada`,
       );
-      expect(repository.findOne).toHaveBeenCalledWith({
+      expect(storeRepository.findOne).toHaveBeenCalledWith({
         where: { id: storeId },
       });
     });
 
     it('debería buscar la tienda con el ID correcto', async () => {
       const storeId = '123e4567-e89b-12d3-a456-426614174000';
-      repository.findOne.mockResolvedValue(mockStore);
+      storeRepository.findOne.mockResolvedValue(mockStore);
 
       await service.findOne(storeId);
 
-      expect(repository.findOne).toHaveBeenCalledTimes(1);
-      expect(repository.findOne).toHaveBeenCalledWith({
+      expect(storeRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(storeRepository.findOne).toHaveBeenCalledWith({
         where: { id: storeId },
       });
     });
@@ -104,16 +116,16 @@ describe('StoreService', () => {
         id: 'new-store-id',
       };
 
-      repository.create.mockReturnValue(newStore as Store);
-      repository.save.mockResolvedValue(newStore);
+      storeRepository.create.mockReturnValue(newStore as Store);
+      storeRepository.save.mockResolvedValue(newStore);
 
       const result = await service.create(createStoreDto);
 
-      expect(repository.create).toHaveBeenCalledWith({
+      expect(storeRepository.create).toHaveBeenCalledWith({
         ...createStoreDto,
         isActive: true,
       });
-      expect(repository.save).toHaveBeenCalledWith(newStore);
+      expect(storeRepository.save).toHaveBeenCalledWith(newStore);
       expect(result).toEqual(newStore);
       expect(result.isActive).toBe(true);
     });
@@ -133,12 +145,12 @@ describe('StoreService', () => {
         id: 'new-store-id',
       };
 
-      repository.create.mockReturnValue(newStore as Store);
-      repository.save.mockResolvedValue(newStore);
+      storeRepository.create.mockReturnValue(newStore as Store);
+      storeRepository.save.mockResolvedValue(newStore);
 
       const result = await service.create(createDtoWithoutDescription);
 
-      expect(repository.create).toHaveBeenCalledWith({
+      expect(storeRepository.create).toHaveBeenCalledWith({
         ...createDtoWithoutDescription,
         isActive: true,
       });
@@ -153,17 +165,31 @@ describe('StoreService', () => {
         id: 'new-store-id',
       };
 
-      repository.create.mockReturnValue(newStore as Store);
-      repository.save.mockResolvedValue(newStore);
+      storeRepository.create.mockReturnValue(newStore as Store);
+      storeRepository.save.mockResolvedValue(newStore);
 
       const result = await service.create(createStoreDto);
 
-      expect(repository.create).toHaveBeenCalledWith(
+      expect(storeRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           isActive: true,
         }),
       );
       expect(result.isActive).toBe(true);
+    });
+
+    describe('remove', () => {
+      it('debería eliminar relaciones store_products antes de borrar la tienda', async () => {
+        const storeId = mockStore.id;
+        storeRepository.findOne.mockResolvedValue(mockStore);
+
+        await service.remove(storeId);
+
+        expect(storeProductRepository.delete).toHaveBeenCalledWith({
+          storeId,
+        });
+        expect(storeRepository.remove).toHaveBeenCalledWith(mockStore);
+      });
     });
   });
 });
