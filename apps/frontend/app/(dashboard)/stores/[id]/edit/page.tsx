@@ -118,14 +118,6 @@ export default function EditStorePage() {
               >
                 Actualizar Tienda
               </FormButton>
-              <button
-                type="button"
-                className="btn btn-outline flex-1"
-                onClick={() => router.back()}
-                disabled={updating}
-              >
-                Cancelar
-              </button>
             </div>
           </form>
         </div>

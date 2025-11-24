@@ -220,7 +220,7 @@ export default function AddProductToStoreModal({
                 step="0.01"
                 min="0"
                 error={errors.storePrice?.message}
-                helperText="Precio específico para esta tienda. Si no se especifica, se usará el precio original."
+                helperText="Precio específico para esta tienda."
                 {...register('storePrice', {
                   valueAsNumber: true,
                   setValueAs: (value) => {

@@ -12,9 +12,14 @@ export const apiClient = axios.create({
 // Interceptor para agregar el token de autenticación
 apiClient.interceptors.request.use(
   async (config) => {
-    const session = await getSession();
-    if (session?.accessToken) {
-      config.headers.Authorization = `Bearer ${session.accessToken}`;
+    // `getSession` solo puede ejecutarse en el cliente, por lo que evitamos
+    // invocarlo cuando el interceptor corre durante SSR o en el backend.
+    if (typeof window !== 'undefined') {
+      const session = await getSession();
+      const token = session?.accessToken ?? session?.user?.accessToken;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -31,4 +36,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-

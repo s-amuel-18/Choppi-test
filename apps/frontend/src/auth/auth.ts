@@ -15,6 +15,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         try {
           // Validar con zod
+
           const validatedFields = loginSchema.safeParse({
             email: credentials?.email,
             password: credentials?.password,
@@ -26,7 +27,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           const { email, password } = validatedFields.data;
 
-          // Llamar al servicio de autenticación
           const { data: loginResponse } = await authService.login({
             email,
             password,

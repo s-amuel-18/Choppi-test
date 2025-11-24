@@ -6,6 +6,7 @@ import {
   LoginResponse,
   ApiError,
 } from '@/src/types/auth';
+import { ApiResponse } from '@choppi/types';
 import { AxiosError } from 'axios';
 
 class AuthService {
@@ -29,7 +30,10 @@ class AuthService {
    */
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
-      const response = await apiClient.post<LoginResponse>('/auth/login', data);
+      const response = await apiClient.post<ApiResponse<LoginResponse>>(
+        '/auth/login',
+        data
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error);
