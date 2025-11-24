@@ -33,7 +33,7 @@ export default function EditProductPage() {
     mode: 'onBlur',
   });
 
-  // Reset form when product is loaded
+  
   useEffect(() => {
     if (product) {
       reset({

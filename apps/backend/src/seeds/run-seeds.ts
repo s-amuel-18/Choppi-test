@@ -5,12 +5,12 @@ import { DataSource } from 'typeorm';
 import { databaseConfig } from '../config/env.config';
 import { runSeeds } from './index';
 
-// Cargar variables de entorno
 
-/**
- * Script para ejecutar los seeds de la base de datos
- * Uso: npm run seed
- */
+
+
+
+
+
 async function bootstrap() {
   console.log('📦 Configurando conexión a la base de datos...');
 
@@ -36,10 +36,10 @@ async function bootstrap() {
     await dataSource.initialize();
     console.log('✅ Conexión establecida.\n');
 
-    // Ejecutar seeds
+    
     await runSeeds(dataSource);
 
-    // Cerrar conexión
+    
     await dataSource.destroy();
     console.log('\n🔌 Conexión cerrada.');
     process.exit(0);

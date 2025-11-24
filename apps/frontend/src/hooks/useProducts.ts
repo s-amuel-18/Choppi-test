@@ -12,7 +12,7 @@ interface PaginatedProducts {
 }
 
 interface UseProductsReturn {
-  // Estado
+  
   products: Product[];
   storeProducts: StoreProduct[];
   loading: boolean;
@@ -42,7 +42,7 @@ interface UseProductsReturn {
   addingProduct: boolean;
   updatingStoreProduct: boolean;
 
-  // Acciones
+  
   setSearchTerm: (term: string) => void;
   setSelectedStoreId: (storeId: string | null) => void;
   clearSearch: () => void;
@@ -169,13 +169,13 @@ export function useProducts(
     []
   );
 
-  // Cargar productos cuando cambian la página, items por página o tienda seleccionada
+  
   useEffect(() => {
     loadProducts(currentPage, searchTerm, itemsPerPage, selectedStoreId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [currentPage, itemsPerPage, selectedStoreId]);
 
-  // Debounce para la búsqueda - cuando cambia searchTerm, resetea a página 1 y busca
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentPage === 1) {
@@ -186,7 +186,7 @@ export function useProducts(
     }, 500);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [searchTerm]);
 
   const handlePageChange = useCallback((newPage: number) => {
@@ -196,7 +196,7 @@ export function useProducts(
 
   const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Resetear a la primera página
+    setCurrentPage(1); 
   }, []);
 
   const clearSearch = useCallback(() => {
@@ -328,9 +328,9 @@ export function useProducts(
             storePrice: storePrice ?? null,
           }
         );
-        // Cerrar el modal
+        
         setUpdateStoreProductModal({ isOpen: false, storeProductId: null });
-        // Recargar la lista
+        
         await loadProducts(
           currentPage,
           searchTerm,
@@ -339,7 +339,7 @@ export function useProducts(
         );
       } catch (err) {
         const apiError = err as ApiError;
-        // Mostrar modal de error
+        
         setErrorModal({
           isOpen: true,
           message:
@@ -363,7 +363,7 @@ export function useProducts(
   }, []);
 
   return {
-    // Estado
+    
     products,
     storeProducts,
     loading,
@@ -381,7 +381,7 @@ export function useProducts(
     addingProduct,
     updatingStoreProduct,
 
-    // Acciones
+    
     setSearchTerm,
     setSelectedStoreId: handleStoreChange,
     clearSearch,

@@ -22,9 +22,9 @@ export class StoreService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  /**
-   * Normaliza un texto removiendo acentos y convirtiéndolo a minúsculas
-   */
+  
+
+
   private normalizeText(text: string): string {
     return text
       .toLowerCase()
@@ -44,22 +44,22 @@ export class StoreService {
 
     const queryBuilder = this.storeRepository.createQueryBuilder('store');
 
-    // Aplicar filtro de búsqueda si existe
+    
     if (q) {
       const normalizedQuery = this.normalizeText(q);
 
-      // Usar una función SQL que normalice el texto removiendo acentos y signos de puntuación
-      // Esto funciona con PostgreSQL usando translate() y regexp_replace()
+      
+      
       queryBuilder.where(
         `LOWER(REGEXP_REPLACE(TRANSLATE(store.name, 'áàäâéèëêíìïîóòöôúùüûñÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛÑ', 'aaaaeeeeiiiioooouuuunAAAAEEEEIIIIOOOOUUUUN'), '[^a-zA-Z0-9 ]', '', 'g')) LIKE :search`,
         { search: `%${normalizedQuery}%` },
       );
     }
 
-    // Obtener total de registros
+    
     const total = await queryBuilder.getCount();
 
-    // Aplicar paginación y ordenar por fecha de creación (más recientes primero)
+    
     const stores = await queryBuilder
       .orderBy('store.createdAt', 'DESC')
       .skip(skip)
@@ -77,9 +77,9 @@ export class StoreService {
     };
   }
 
-  /**
-   * Busca una tienda por su ID
-   */
+  
+
+
   async findOne(id: string): Promise<Store> {
     const store = await this.storeRepository.findOne({
       where: { id },
@@ -92,9 +92,9 @@ export class StoreService {
     return store;
   }
 
-  /**
-   * Crea una nueva tienda
-   */
+  
+
+
   async create(createStoreDto: CreateStoreDto): Promise<Store> {
     const store = this.storeRepository.create({
       ...createStoreDto,
@@ -104,31 +104,31 @@ export class StoreService {
     return await this.storeRepository.save(store);
   }
 
-  /**
-   * Actualiza una tienda existente
-   */
+  
+
+
   async update(id: string, updateStoreDto: UpdateStoreDto): Promise<Store> {
     const store = await this.findOne(id);
 
-    // Actualizar solo los campos proporcionados
+    
     Object.assign(store, updateStoreDto);
 
     await this.storeRepository.save(store);
     return await this.findOne(id);
   }
 
-  /**
-   * Elimina una tienda existente
-   */
+  
+
+
   async remove(id: string): Promise<void> {
     const store = await this.findOne(id);
     await this.storeProductRepository.delete({ storeId: id });
     await this.storeRepository.remove(store);
   }
 
-  /**
-   * Obtiene métricas agregadas para el dashboard de tiendas/productos
-   */
+  
+
+
   async getDashboardSummary(): Promise<StoreDashboardSummaryDto> {
     const [totalProducts, totalStores, inactiveStores, outOfStockProducts] =
       await Promise.all([
@@ -146,9 +146,9 @@ export class StoreService {
     };
   }
 
-  /**
-   * Obtiene las últimas tiendas con métricas de inventario
-   */
+  
+
+
   async getTopStores(limit: number = 4): Promise<TopStoreResponseDto[]> {
     const normalizedLimit = this.normalizeLimit(limit, 10, 4);
 

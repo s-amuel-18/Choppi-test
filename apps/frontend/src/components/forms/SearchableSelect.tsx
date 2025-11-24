@@ -65,7 +65,7 @@ export default function SearchableSelect({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      // Enfocar el input cuando se abre
+      
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
@@ -128,7 +128,7 @@ export default function SearchableSelect({
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-96 overflow-hidden">
-            {/* Input de búsqueda */}
+            {}
             <div className="p-2 border-b border-base-300">
               <input
                 ref={inputRef}
@@ -172,7 +172,7 @@ export default function SearchableSelect({
               )}
             </div>
 
-            {/* Indicador de resultados limitados */}
+            {}
             {filteredOptions.length === maxResults && (
               <div className="p-2 text-xs text-base-content/60 border-t border-base-300 text-center">
                 Mostrando {maxResults} resultados. Refina tu búsqueda para más

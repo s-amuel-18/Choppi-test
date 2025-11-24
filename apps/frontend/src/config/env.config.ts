@@ -1,11 +1,11 @@
 import { cleanEnv, str, url } from 'envalid';
 
-// Función auxiliar para obtener variables de entorno con fallback
+
 const getEnvVar = (key: string, defaultValue: string): string => {
   return process.env[key] || defaultValue;
 };
 
-// Validar solo en el servidor, en el cliente usar directamente process.env
+
 const isServer = typeof window === 'undefined';
 
 const envVars = {

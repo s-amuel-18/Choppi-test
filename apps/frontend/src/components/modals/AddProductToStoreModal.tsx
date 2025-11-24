@@ -78,7 +78,7 @@ export default function AddProductToStoreModal({
     }
   }, [isOpen]);
 
-  // Filtrar productos que no están vinculados a la tienda
+  
   const availableProducts = useMemo(() => {
     if (!storeId || existingProductIds.length === 0) {
       return allProducts;
@@ -88,7 +88,7 @@ export default function AddProductToStoreModal({
     );
   }, [allProducts, storeId, existingProductIds]);
 
-  // Preparar opciones para el SearchableSelect (solo productos no vinculados)
+  
   const productOptions = useMemo(() => {
     return availableProducts.map((product) => ({
       value: product.id,
@@ -192,7 +192,7 @@ export default function AddProductToStoreModal({
                   label="Producto"
                   maxResults={20}
                 />
-                {/* Campo oculto para react-hook-form */}
+                {}
                 <input type="hidden" {...register('productId')} />
               </>
             )}

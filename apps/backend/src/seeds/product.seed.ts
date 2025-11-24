@@ -1,11 +1,11 @@
 import { DataSource } from 'typeorm';
 import { Product } from '../components/products/product.entity';
 
-/**
- * Datos de prueba para productos
- */
+
+
+
 const productsData: Partial<Product>[] = [
-  // Electrónica
+  
   {
     name: 'Laptop Dell XPS 15',
     description:
@@ -77,7 +77,7 @@ const productsData: Partial<Product>[] = [
     category: 'Electrónica',
   },
 
-  // Ropa y Moda
+  
   {
     name: 'Camiseta Básica Algodón',
     description:
@@ -114,7 +114,7 @@ const productsData: Partial<Product>[] = [
     category: 'Ropa',
   },
 
-  // Hogar y Decoración
+  
   {
     name: 'Lámpara de Mesa LED',
     description:
@@ -151,7 +151,7 @@ const productsData: Partial<Product>[] = [
     category: 'Hogar',
   },
 
-  // Deportes y Fitness
+  
   {
     name: 'Bicicleta de Montaña',
     description:
@@ -188,7 +188,7 @@ const productsData: Partial<Product>[] = [
     category: 'Deportes',
   },
 
-  // Libros y Entretenimiento
+  
   {
     name: 'Kindle Paperwhite',
     description:
@@ -218,7 +218,7 @@ const productsData: Partial<Product>[] = [
     category: 'Gaming',
   },
 
-  // Alimentación
+  
   {
     name: 'Aceite de Oliva Extra Virgen',
     description:
@@ -248,7 +248,7 @@ const productsData: Partial<Product>[] = [
     category: 'Alimentación',
   },
 
-  // Herramientas
+  
   {
     name: 'Taladro Inalámbrico',
     description:
@@ -272,15 +272,15 @@ const productsData: Partial<Product>[] = [
   },
 ];
 
-/**
- * Seed para poblar la base de datos con productos de prueba
- */
+
+
+
 export async function seedProducts(dataSource: DataSource): Promise<void> {
   const productRepository = dataSource.getRepository(Product);
 
   console.log('🌱 Iniciando seed de productos...');
 
-  // Verificar si ya existen productos
+  
   const existingCount = await productRepository.count();
   if (existingCount > 0) {
     console.log(`⚠️  Ya existen ${existingCount} productos en la base de datos.`);
@@ -290,14 +290,14 @@ export async function seedProducts(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  // Crear los productos
+  
   const products = productRepository.create(productsData);
   await productRepository.save(products);
 
   console.log(`✅ Se crearon ${products.length} productos exitosamente.`);
   console.log('📦 Productos creados por categoría:');
   
-  // Agrupar por categoría para mostrar estadísticas
+  
   const byCategory = products.reduce((acc, product) => {
     const category = product.category || 'Sin categoría';
     acc[category] = (acc[category] || 0) + 1;

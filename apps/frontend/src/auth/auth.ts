@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         try {
-          // Validar con zod
+          
 
           const validatedFields = loginSchema.safeParse({
             email: credentials?.email,
@@ -36,7 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
-          // Retornar usuario para NextAuth
+          
           return {
             id: loginResponse.user.id,
             email: loginResponse.user.email,

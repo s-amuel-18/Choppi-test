@@ -1,9 +1,9 @@
 import { DataSource } from 'typeorm';
 import { Store } from '../components/store/store.entity';
 
-/**
- * Datos de prueba para tiendas
- */
+
+
+
 const storesData: Partial<Store>[] = [
   {
     name: 'Tienda Central',
@@ -132,15 +132,15 @@ const storesData: Partial<Store>[] = [
   },
 ];
 
-/**
- * Seed para poblar la base de datos con tiendas de prueba
- */
+
+
+
 export async function seedStores(dataSource: DataSource): Promise<void> {
   const storeRepository = dataSource.getRepository(Store);
 
   console.log('🌱 Iniciando seed de tiendas...');
 
-  // Verificar si ya existen tiendas
+  
   const existingCount = await storeRepository.count();
   if (existingCount > 0) {
     console.log(`⚠️  Ya existen ${existingCount} tiendas en la base de datos.`);
@@ -150,7 +150,7 @@ export async function seedStores(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  // Crear las tiendas
+  
   const stores = storeRepository.create(storesData);
   await storeRepository.save(stores);
 

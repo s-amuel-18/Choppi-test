@@ -10,9 +10,9 @@ import { ApiResponse } from '@choppi/types';
 import { AxiosError } from 'axios';
 
 class AuthService {
-  /**
-   * Registra un nuevo usuario
-   */
+  
+
+
   async signup(data: SignupRequest): Promise<SignupResponse> {
     try {
       const response = await apiClient.post<SignupResponse>(
@@ -25,9 +25,9 @@ class AuthService {
     }
   }
 
-  /**
-   * Inicia sesión con email y contraseña
-   */
+  
+
+
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await apiClient.post<ApiResponse<LoginResponse>>(
@@ -40,9 +40,9 @@ class AuthService {
     }
   }
 
-  /**
-   * Maneja errores de la API
-   */
+  
+
+
   private handleError(error: unknown): ApiError {
     if (error instanceof AxiosError) {
       const apiError = error.response?.data;

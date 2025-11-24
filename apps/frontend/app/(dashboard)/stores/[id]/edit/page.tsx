@@ -34,7 +34,7 @@ export default function EditStorePage() {
     mode: 'onBlur',
   });
 
-  // Reset form when store is loaded
+  
   useEffect(() => {
     if (store) {
       reset({

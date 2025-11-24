@@ -9,11 +9,11 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor para agregar el token de autenticación
+
 apiClient.interceptors.request.use(
   async (config) => {
-    // `getSession` solo puede ejecutarse en el cliente, por lo que evitamos
-    // invocarlo cuando el interceptor corre durante SSR o en el backend.
+    
+    
     if (typeof window !== 'undefined') {
       const session = await getSession();
       const token = session?.accessToken ?? session?.user?.accessToken;
@@ -28,11 +28,11 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para respuestas
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Aquí puedes manejar errores globales
+    
     return Promise.reject(error);
   }
 );

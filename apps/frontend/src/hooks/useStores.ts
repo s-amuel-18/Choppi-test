@@ -11,7 +11,7 @@ interface PaginatedStores {
 }
 
 interface UseStoresReturn {
-  // Estado
+  
   stores: Store[];
   loading: boolean;
   error: string;
@@ -30,7 +30,7 @@ interface UseStoresReturn {
     message: string;
   };
 
-  // Acciones
+  
   setSearchTerm: (term: string) => void;
   clearSearch: () => void;
   handlePageChange: (page: number) => void;
@@ -98,13 +98,13 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
     []
   );
 
-  // Cargar stores cuando cambian la página o items por página
+  
   useEffect(() => {
     loadStores(currentPage, searchTerm, itemsPerPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [currentPage, itemsPerPage]);
 
-  // Debounce para la búsqueda - cuando cambia searchTerm, resetea a página 1 y busca
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentPage === 1) {
@@ -115,7 +115,7 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
     }, 500);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [searchTerm]);
 
   const handlePageChange = useCallback((newPage: number) => {
@@ -125,7 +125,7 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
 
   const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Resetear a la primera página
+    setCurrentPage(1); 
   }, []);
 
   const clearSearch = useCallback(() => {
@@ -178,7 +178,7 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
   }, [currentPage, searchTerm, itemsPerPage, loadStores]);
 
   return {
-    // Estado
+    
     stores,
     loading,
     error,
@@ -190,7 +190,7 @@ export function useStores(initialItemsPerPage: number = 10): UseStoresReturn {
     deleteModal,
     errorModal,
 
-    // Acciones
+    
     setSearchTerm,
     clearSearch,
     handlePageChange,

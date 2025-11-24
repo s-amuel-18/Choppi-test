@@ -4,7 +4,7 @@ import { CreateStoreInput, UpdateStoreInput } from '@/src/schemas/store.schema';
 
 export type StoreFormData = CreateStoreInput;
 
-// Tipo flexible que acepta tanto CreateStoreInput como UpdateStoreInput
+
 type FlexibleStoreFormData = CreateStoreInput | UpdateStoreInput;
 
 interface StoreFormFieldsProps {

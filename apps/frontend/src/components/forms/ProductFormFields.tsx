@@ -4,7 +4,7 @@ import { CreateProductInput, UpdateProductInput } from '@/src/schemas/product.sc
 
 export type ProductFormData = CreateProductInput;
 
-// Tipo flexible que acepta tanto CreateProductInput como UpdateProductInput
+
 type FlexibleProductFormData = CreateProductInput | UpdateProductInput;
 
 interface ProductFormFieldsProps {

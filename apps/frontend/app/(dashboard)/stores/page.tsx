@@ -28,7 +28,7 @@ export default function StoresPage() {
 
   return (
     <div className="w-full">
-      {/* Title and Create Button */}
+      {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold">Tiendas</h1>
         <Link href="/stores/create" className="btn btn-primary">
@@ -49,7 +49,7 @@ export default function StoresPage() {
         </Link>
       </div>
 
-      {/* Error Alert */}
+      {}
       {error && (
         <div className="alert alert-error mb-6">
           <svg
@@ -69,7 +69,7 @@ export default function StoresPage() {
         </div>
       )}
 
-      {/* Search */}
+      {}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -141,7 +141,7 @@ export default function StoresPage() {
         )}
       </div>
 
-      {/* Table */}
+      {}
       {loading && stores.length === 0 ? (
         <div className="flex justify-center items-center py-12">
           <span className="loading loading-spinner loading-lg"></span>
@@ -243,7 +243,7 @@ export default function StoresPage() {
             </table>
           </div>
 
-          {/* Pagination */}
+          {}
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
@@ -257,7 +257,7 @@ export default function StoresPage() {
         </>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}
@@ -270,7 +270,7 @@ export default function StoresPage() {
         loading={deletingId !== null}
       />
 
-      {/* Error Modal */}
+      {}
       <ConfirmModal
         isOpen={errorModal.isOpen}
         onClose={closeErrorModal}

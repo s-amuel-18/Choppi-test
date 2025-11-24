@@ -8,9 +8,9 @@ import {
 } from '@/src/types/product';
 
 class ProductService {
-  /**
-   * Crea un nuevo producto
-   */
+  
+
+
   async create(data: CreateProductRequest): Promise<Product> {
     try {
       const response = await apiClient.post<ApiResponse<Product>>(
@@ -28,9 +28,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Obtiene todos los productos con paginación
-   */
+  
+
+
   async findAll(params?: {
     page?: number;
     limit?: number;
@@ -63,9 +63,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Obtiene un producto por su ID
-   */
+  
+
+
   async findOne(id: string): Promise<Product> {
     try {
       const response = await apiClient.get<ApiResponse<Product>>(
@@ -82,9 +82,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Actualiza un producto existente
-   */
+  
+
+
   async update(
     id: string,
     data: Partial<CreateProductRequest>
@@ -105,9 +105,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Elimina un producto
-   */
+  
+
+
   async remove(id: string): Promise<void> {
     try {
       await apiClient.delete(`/products/${id}`);
@@ -116,9 +116,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Obtiene los productos de una tienda con paginación
-   */
+  
+
+
   async findStoreProducts(
     storeId: string,
     params?: {
@@ -168,7 +168,7 @@ class ProductService {
       >(`/stores/${storeId}/products`, { params });
 
       if (response.data.success && response.data.data) {
-        // El backend devuelve { data: [...], meta: {...} }
+        
         return response.data.data;
       }
 
@@ -178,9 +178,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Agrega un producto a una tienda
-   */
+  
+
+
   async addProductToStore(
     storeId: string,
     data: {
@@ -222,9 +222,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Actualiza un producto de tienda
-   */
+  
+
+
   async updateStoreProduct(
     storeId: string,
     storeProductId: string,
@@ -266,9 +266,9 @@ class ProductService {
     }
   }
 
-  /**
-   * Maneja errores de la API
-   */
+  
+
+
   private handleError(error: unknown): ApiError {
     if (error instanceof AxiosError) {
       const apiError = error.response?.data;

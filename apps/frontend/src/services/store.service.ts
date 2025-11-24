@@ -9,9 +9,9 @@ import {
 } from '@/src/types/store';
 
 class StoreService {
-  /**
-   * Crea una nueva tienda
-   */
+  
+
+
   async create(data: CreateStoreRequest): Promise<Store> {
     try {
       const response = await apiClient.post<ApiResponse<Store>>('/stores', data);
@@ -26,9 +26,9 @@ class StoreService {
     }
   }
 
-  /**
-   * Obtiene todas las tiendas con paginación
-   */
+  
+
+
   async findAll(params?: {
     page?: number;
     limit?: number;
@@ -59,9 +59,9 @@ class StoreService {
     }
   }
 
-  /**
-   * Obtiene una tienda por su ID
-   */
+  
+
+
   async findOne(id: string): Promise<Store> {
     try {
       const response = await apiClient.get<ApiResponse<Store>>(`/stores/${id}`);
@@ -76,9 +76,9 @@ class StoreService {
     }
   }
 
-  /**
-   * Actualiza una tienda existente
-   */
+  
+
+
   async update(
     id: string,
     data: Partial<CreateStoreRequest>
@@ -99,9 +99,9 @@ class StoreService {
     }
   }
 
-  /**
-   * Elimina una tienda
-   */
+  
+
+
   async remove(id: string): Promise<void> {
     try {
       await apiClient.delete(`/stores/${id}`);
@@ -110,9 +110,9 @@ class StoreService {
     }
   }
 
-  /**
-   * Maneja errores de la API
-   */
+  
+
+
   private handleError(error: unknown): ApiError {
     if (error instanceof AxiosError) {
       const apiError = error.response?.data;

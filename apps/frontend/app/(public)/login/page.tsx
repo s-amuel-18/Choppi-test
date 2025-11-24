@@ -44,7 +44,7 @@ export default function LoginPage() {
         );
       } else if (result?.ok) {
         router.push('/dashboard');
-        // router.refresh();
+        
       }
     } catch (err) {
       setError('Error al iniciar sesión. Por favor, intenta nuevamente.');

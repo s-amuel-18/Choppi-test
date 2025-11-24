@@ -54,7 +54,7 @@ export default function UpdateStoreProductModal({
     mode: 'onBlur',
   });
 
-  // Cargar datos del producto cuando se abre el modal o cambia el storeProduct
+  
   useEffect(() => {
     if (isOpen && storeProduct) {
       reset({

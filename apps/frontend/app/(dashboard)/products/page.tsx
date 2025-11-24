@@ -44,7 +44,7 @@ export default function ProductsPage() {
 
   const { stores, loading: storesLoading } = useStoreList();
 
-  // Determinar qué datos mostrar
+  
   const displayProducts = selectedStoreId
     ? storeProducts.map((sp) => sp.product)
     : products;
@@ -59,7 +59,7 @@ export default function ProductsPage() {
 
   return (
     <div className="w-full">
-      {/* Title and Create Button */}
+      {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold">Productos</h1>
         <div className="flex gap-2">
@@ -107,7 +107,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Error Alert */}
+      {}
       {error && (
         <div className="alert alert-error mb-6">
           <svg
@@ -127,10 +127,10 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Store Selector and Search */}
+      {}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Store Selector */}
+          {}
           <div className="w-full sm:w-auto">
             <select
               className="select select-bordered w-full"
@@ -215,7 +215,7 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Table */}
+      {}
       {loading && displayProducts.length === 0 ? (
         <div className="flex justify-center items-center py-12">
           <span className="loading loading-spinner loading-lg"></span>
@@ -408,7 +408,7 @@ export default function ProductsPage() {
             </table>
           </div>
 
-          {/* Pagination */}
+          {}
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
@@ -422,7 +422,7 @@ export default function ProductsPage() {
         </>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}
@@ -435,7 +435,7 @@ export default function ProductsPage() {
         loading={deletingId !== null}
       />
 
-      {/* Error Modal */}
+      {}
       <ConfirmModal
         isOpen={errorModal.isOpen}
         onClose={closeErrorModal}
@@ -447,7 +447,7 @@ export default function ProductsPage() {
         confirmVariant="primary"
       />
 
-      {/* Add Product to Store Modal */}
+      {}
       <AddProductToStoreModal
         isOpen={addProductModal.isOpen}
         onClose={closeAddProductModal}
@@ -459,7 +459,7 @@ export default function ProductsPage() {
         }
       />
 
-      {/* Update Store Product Modal */}
+      {}
       <UpdateStoreProductModal
         isOpen={updateStoreProductModal.isOpen}
         onClose={closeUpdateStoreProductModal}

@@ -29,9 +29,9 @@ export class ProductsService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  /**
-   * Normaliza un texto removiendo acentos y convirtiéndolo a minúsculas
-   */
+  
+
+
   private normalizeText(text: string): string {
     return text
       .toLowerCase()
@@ -55,7 +55,7 @@ export class ProductsService {
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
-    // Aplicar filtro de búsqueda si existe
+    
     if (q) {
       queryBuilder.where(
         `(product.name ILIKE :search OR product.description ILIKE :search)`,
@@ -63,10 +63,10 @@ export class ProductsService {
       );
     }
 
-    // Obtener total de registros
+    
     const total = await queryBuilder.getCount();
 
-    // Aplicar paginación y ordenar por fecha de creación (más recientes primero)
+    
     const products = await queryBuilder
       .orderBy('product.createdAt', 'DESC')
       .skip(skip)
@@ -84,9 +84,9 @@ export class ProductsService {
     };
   }
 
-  /**
-   * Obtiene un producto por su ID
-   */
+  
+
+
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
@@ -99,24 +99,24 @@ export class ProductsService {
     return product;
   }
 
-  /**
-   * Crea un nuevo producto
-   */
+  
+
+
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const product = this.productRepository.create(createProductDto);
     return await this.productRepository.save(product);
   }
 
-  /**
-   * Actualiza un producto existente
-   */
+  
+
+
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     const product = await this.findOne(id);
 
-    // Actualizar solo los campos proporcionados
+    
     if (updateProductDto.name !== undefined) {
       product.name = updateProductDto.name;
     }
@@ -136,14 +136,14 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  /**
-   * Agrega un producto a una tienda
-   */
+  
+
+
   async addProductToStore(
     storeId: string,
     createStoreProductDto: CreateStoreProductDto,
   ): Promise<StoreProduct> {
-    // Verificar que la tienda existe
+    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -152,7 +152,7 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    // Verificar que el producto existe
+    
     const product = await this.productRepository.findOne({
       where: { id: createStoreProductDto.productId },
     });
@@ -163,7 +163,7 @@ export class ProductsService {
       );
     }
 
-    // Verificar que el producto no esté ya en la tienda
+    
     const existingStoreProduct = await this.storeProductRepository.findOne({
       where: {
         storeId,
@@ -175,7 +175,7 @@ export class ProductsService {
       throw new ConflictException('El producto ya está asociado a esta tienda');
     }
 
-    // Crear la asociación
+    
     const storeProduct = this.storeProductRepository.create({
       storeId,
       productId: createStoreProductDto.productId,
@@ -188,21 +188,21 @@ export class ProductsService {
     const savedStoreProduct =
       await this.storeProductRepository.save(storeProduct);
 
-    // Garantizamos que las relaciones estén disponibles sin requerir otra consulta
+    
     savedStoreProduct.store = store;
     savedStoreProduct.product = product;
 
     return savedStoreProduct;
   }
 
-  /**
-   * Obtiene los productos de una tienda con paginación, búsqueda y filtros
-   */
+  
+
+
   async getStoreProducts(
     storeId: string,
     queryDto: GetStoreProductsQueryDto,
   ): Promise<PaginatedStoreProductResponseDto> {
-    // Verificar que la tienda existe
+    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -219,7 +219,7 @@ export class ProductsService {
       .leftJoinAndSelect('storeProduct.product', 'product')
       .where('storeProduct.storeId = :storeId', { storeId });
 
-    // Aplicar filtro de búsqueda si existe
+    
     if (q) {
       queryBuilder.andWhere(
         `(product.name ILIKE :search OR product.description ILIKE :search)`,
@@ -227,15 +227,15 @@ export class ProductsService {
       );
     }
 
-    // Aplicar filtro de stock si existe
+    
     if (inStock === true) {
       queryBuilder.andWhere('storeProduct.stock > 0');
     }
 
-    // Obtener total de registros
+    
     const total = await queryBuilder.getCount();
 
-    // Aplicar paginación y ordenar por fecha de creación del producto (más recientes primero)
+    
     const storeProducts = await queryBuilder
       .orderBy('product.createdAt', 'DESC')
       .skip(skip)
@@ -255,9 +255,9 @@ export class ProductsService {
     };
   }
 
-  /**
-   * Obtiene los productos sin inventario más recientes
-   */
+  
+
+
   async getProductsWithoutInventory(
     limit: number = 5,
   ): Promise<OutOfStockProductResponseDto[]> {
@@ -286,15 +286,15 @@ export class ProductsService {
     }));
   }
 
-  /**
-   * Actualiza un producto de tienda
-   */
+  
+
+
   async updateStoreProduct(
     storeId: string,
     storeProductId: string,
     updateStoreProductDto: UpdateStoreProductDto,
   ): Promise<StoreProduct> {
-    // Verificar que la tienda existe
+    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -303,7 +303,7 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    // Buscar el producto de la tienda
+    
     const storeProduct = await this.storeProductRepository.findOne({
       where: {
         id: storeProductId,
@@ -318,7 +318,7 @@ export class ProductsService {
       );
     }
 
-    // Actualizar solo los campos proporcionados
+    
     if (updateStoreProductDto.stock !== undefined) {
       storeProduct.stock = updateStoreProductDto.stock;
     }
@@ -330,14 +330,14 @@ export class ProductsService {
     return await this.storeProductRepository.save(storeProduct);
   }
 
-  /**
-   * Elimina un producto de una tienda
-   */
+  
+
+
   async removeProductFromStore(
     storeId: string,
     storeProductId: string,
   ): Promise<void> {
-    // Verificar que la tienda existe
+    
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
@@ -346,7 +346,7 @@ export class ProductsService {
       throw new NotFoundException(`Tienda con ID ${storeId} no encontrada`);
     }
 
-    // Buscar el producto de la tienda
+    
     const storeProduct = await this.storeProductRepository.findOne({
       where: {
         id: storeProductId,
@@ -363,19 +363,19 @@ export class ProductsService {
     await this.storeProductRepository.remove(storeProduct);
   }
 
-  /**
-   * Elimina un producto existente
-   * También elimina todas las relaciones con tiendas (store_products)
-   */
+  
+
+
+
   async remove(id: string): Promise<void> {
     const product = await this.findOne(id);
 
-    // Eliminar todas las relaciones con tiendas primero
+    
     await this.storeProductRepository.delete({
       productId: id,
     });
 
-    // Eliminar el producto
+    
     await this.productRepository.remove(product);
   }
 

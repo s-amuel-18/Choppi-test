@@ -8,7 +8,7 @@ import { TransformInterceptor } from './interceptors/transform.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Configuración CORS
+  
   const corsOptions = {
     origin: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
     credentials: true,

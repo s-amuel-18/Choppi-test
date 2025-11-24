@@ -36,7 +36,7 @@ export default function RegisterPage() {
       const apiError = error as ApiError;
 
       if (apiError.errors && Array.isArray(apiError.errors)) {
-        // Errores de validación del backend
+        
         apiError.errors.forEach((errorMsg) => {
           if (errorMsg.toLowerCase().includes('email')) {
             setError('email', { type: 'server', message: errorMsg });

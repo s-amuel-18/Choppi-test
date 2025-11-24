@@ -330,7 +330,6 @@ export class StoreController {
     description: 'Tienda no encontrada',
   })
   async remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    console.log('✅✅✅');
     await this.storeService.remove(id);
     return {
       success: true,

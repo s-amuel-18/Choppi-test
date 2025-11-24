@@ -8,9 +8,9 @@ import {
 } from '@/src/types/dashboard';
 
 class DashboardService {
-  /**
-   * Realiza una petición fetch a la API
-   */
+  
+
+
   private async fetchApi<T>(endpoint: string): Promise<T> {
     const response = await fetch(getApiUrl(endpoint), {
       cache: 'no-store',
@@ -34,9 +34,9 @@ class DashboardService {
     return payload.data;
   }
 
-  /**
-   * Obtiene el resumen general del dashboard
-   */
+  
+
+
   async getSummary(): Promise<DashboardSummary> {
     try {
       return await this.fetchApi<DashboardSummary>('/stores/summary');
@@ -45,9 +45,9 @@ class DashboardService {
     }
   }
 
-  /**
-   * Obtiene las últimas tiendas con métricas
-   */
+  
+
+
   async getTopStores(limit: number = 4): Promise<DashboardTopStore[]> {
     try {
       const endpoint = `/stores/top?limit=${limit}`;
@@ -57,9 +57,9 @@ class DashboardService {
     }
   }
 
-  /**
-   * Obtiene los productos sin inventario
-   */
+  
+
+
   async getOutOfStockProducts(
     limit: number = 5
   ): Promise<DashboardOutOfStockProduct[]> {
@@ -71,9 +71,9 @@ class DashboardService {
     }
   }
 
-  /**
-   * Obtiene todos los datos del dashboard en paralelo
-   */
+  
+
+
   async getAllDashboardData(): Promise<{
     summary: DashboardSummary;
     topStores: DashboardTopStore[];
@@ -96,9 +96,9 @@ class DashboardService {
     }
   }
 
-  /**
-   * Maneja errores de la API
-   */
+  
+
+
   private handleError(error: unknown): ApiError {
     if (error instanceof Error) {
       return {
