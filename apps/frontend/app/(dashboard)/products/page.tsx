@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useProducts } from '@/src/hooks/useProducts';
 import { useStoreList } from '@/src/hooks/useStoreList';
 import ConfirmModal from '@/src/components/ConfirmModal';
+import AddProductToStoreModal from '@/src/components/modals/AddProductToStoreModal';
 import Pagination from '@/src/components/Pagination';
 
 export default function ProductsPage() {
@@ -27,7 +28,12 @@ export default function ProductsPage() {
     handleDeleteClick,
     handleDeleteConfirm,
     handleDeleteCancel,
+    openAddProductModal,
+    closeAddProductModal,
+    handleAddProductToStore,
     closeErrorModal,
+    addProductModal,
+    addingProduct,
   } = useProducts(5);
 
   const { stores, loading: storesLoading } = useStoreList();
@@ -50,22 +56,49 @@ export default function ProductsPage() {
       {/* Title and Create Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-3xl font-bold">Productos</h1>
-        <Link href="/products/create" className="btn btn-primary">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeWidth="2"
-            fill="none"
-            stroke="currentColor"
-            className="size-5"
+        <div className="flex gap-2">
+          <button
+            onClick={openAddProductModal}
+            className="btn btn-secondary"
+            disabled={!selectedStoreId || loading}
+            title={
+              !selectedStoreId
+                ? 'Selecciona una tienda para agregar productos'
+                : 'Agregar producto a la tienda'
+            }
           >
-            <path d="M12 5v14"></path>
-            <path d="M5 12h14"></path>
-          </svg>
-          Crear Producto
-        </Link>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeWidth="2"
+              fill="none"
+              stroke="currentColor"
+              className="size-5"
+            >
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+            Agregar a Tienda
+          </button>
+          <Link href="/products/create" className="btn btn-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeWidth="2"
+              fill="none"
+              stroke="currentColor"
+              className="size-5"
+            >
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+            Crear Producto
+          </Link>
+        </div>
       </div>
 
       {/* Error Alert */}
@@ -363,6 +396,18 @@ export default function ProductsPage() {
         confirmText="Aceptar"
         cancelText=""
         confirmVariant="primary"
+      />
+
+      {/* Add Product to Store Modal */}
+      <AddProductToStoreModal
+        isOpen={addProductModal.isOpen}
+        onClose={closeAddProductModal}
+        onSubmit={handleAddProductToStore}
+        loading={addingProduct}
+        storeId={selectedStoreId}
+        existingProductIds={
+          selectedStoreId ? storeProducts.map((sp) => sp.productId) : []
+        }
       />
     </div>
   );

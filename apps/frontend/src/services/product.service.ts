@@ -179,6 +179,50 @@ class ProductService {
   }
 
   /**
+   * Agrega un producto a una tienda
+   */
+  async addProductToStore(
+    storeId: string,
+    data: {
+      productId: string;
+      stock: number;
+      storePrice?: number | null;
+    }
+  ): Promise<{
+    id: string;
+    storeId: string;
+    productId: string;
+    stock: number;
+    storePrice: number | null;
+    createdAt: string;
+    updatedAt: string;
+    product: Product;
+  }> {
+    try {
+      const response = await apiClient.post<
+        ApiResponse<{
+          id: string;
+          storeId: string;
+          productId: string;
+          stock: number;
+          storePrice: number | null;
+          createdAt: string;
+          updatedAt: string;
+          product: Product;
+        }>
+      >(`/stores/${storeId}/products`, data);
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error('Respuesta inválida del servidor');
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Maneja errores de la API
    */
   private handleError(error: unknown): ApiError {

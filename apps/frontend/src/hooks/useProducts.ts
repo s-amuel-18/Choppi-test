@@ -32,6 +32,10 @@ interface UseProductsReturn {
     isOpen: boolean;
     message: string;
   };
+  addProductModal: {
+    isOpen: boolean;
+  };
+  addingProduct: boolean;
 
   // Acciones
   setSearchTerm: (term: string) => void;
@@ -42,6 +46,13 @@ interface UseProductsReturn {
   handleDeleteClick: (id: string, name: string) => void;
   handleDeleteConfirm: () => Promise<void>;
   handleDeleteCancel: () => void;
+  openAddProductModal: () => void;
+  closeAddProductModal: () => void;
+  handleAddProductToStore: (
+    productId: string,
+    stock: number,
+    storePrice?: number | null
+  ) => Promise<void>;
   closeErrorModal: () => void;
   reload: () => Promise<void>;
 }
@@ -81,6 +92,12 @@ export function useProducts(
     isOpen: false,
     message: '',
   });
+  const [addProductModal, setAddProductModal] = useState<{
+    isOpen: boolean;
+  }>({
+    isOpen: false,
+  });
+  const [addingProduct, setAddingProduct] = useState(false);
 
   const loadProducts = useCallback(
     async (
@@ -218,6 +235,50 @@ export function useProducts(
     setErrorModal({ isOpen: false, message: '' });
   }, []);
 
+  const openAddProductModal = useCallback(() => {
+    setAddProductModal({ isOpen: true });
+  }, []);
+
+  const closeAddProductModal = useCallback(() => {
+    setAddProductModal({ isOpen: false });
+  }, []);
+
+  const handleAddProductToStore = useCallback(
+    async (productId: string, stock: number, storePrice?: number | null) => {
+      if (!selectedStoreId) return;
+
+      setAddingProduct(true);
+      try {
+        await productService.addProductToStore(selectedStoreId, {
+          productId,
+          stock,
+          storePrice: storePrice ?? null,
+        });
+        // Cerrar el modal
+        setAddProductModal({ isOpen: false });
+        // Recargar la lista
+        await loadProducts(
+          currentPage,
+          searchTerm,
+          itemsPerPage,
+          selectedStoreId
+        );
+      } catch (err) {
+        const apiError = err as ApiError;
+        // Mostrar modal de error
+        setErrorModal({
+          isOpen: true,
+          message:
+            apiError.message || 'Error al agregar el producto a la tienda',
+        });
+        throw err;
+      } finally {
+        setAddingProduct(false);
+      }
+    },
+    [selectedStoreId, currentPage, searchTerm, itemsPerPage, loadProducts]
+  );
+
   const reload = useCallback(async () => {
     await loadProducts(currentPage, searchTerm, itemsPerPage, selectedStoreId);
   }, [currentPage, searchTerm, itemsPerPage, selectedStoreId, loadProducts]);
@@ -241,6 +302,8 @@ export function useProducts(
     deletingId,
     deleteModal,
     errorModal,
+    addProductModal,
+    addingProduct,
 
     // Acciones
     setSearchTerm,
@@ -251,6 +314,9 @@ export function useProducts(
     handleDeleteClick,
     handleDeleteConfirm,
     handleDeleteCancel,
+    openAddProductModal,
+    closeAddProductModal,
+    handleAddProductToStore,
     closeErrorModal,
     reload,
   };
